@@ -28,15 +28,28 @@ class UsbPermissionManager(private val context: Context) {
         }
 
         return suspendCancellableCoroutine { continuation ->
+            var isUnregistered = false
+
+            fun safeUnregister(receiver: BroadcastReceiver) {
+                synchronized(this) {
+                    if (!isUnregistered) {
+                        isUnregistered = true
+                        try {
+                            context.unregisterReceiver(receiver)
+                        } catch (ignored: Exception) {}
+                    }
+                }
+            }
+
             val receiver = object : BroadcastReceiver() {
                 override fun onReceive(ctx: Context, intent: Intent) {
                     if (intent.action == ACTION_USB_PERMISSION) {
-                        try {
-                            context.unregisterReceiver(this)
-                        } catch (ignored: Exception) {}
+                        safeUnregister(this)
 
                         val granted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
-                        continuation.resume(granted)
+                        if (continuation.isActive) {
+                            continuation.resume(granted)
+                        }
                     }
                 }
             }
@@ -65,12 +78,17 @@ class UsbPermissionManager(private val context: Context) {
                 flags
             )
 
-            usbManager.requestPermission(device, permissionIntent)
+            try {
+                usbManager.requestPermission(device, permissionIntent)
+            } catch (e: Exception) {
+                safeUnregister(receiver)
+                if (continuation.isActive) {
+                    continuation.resume(false)
+                }
+            }
 
             continuation.invokeOnCancellation {
-                try {
-                    context.unregisterReceiver(receiver)
-                } catch (ignored: Exception) {}
+                safeUnregister(receiver)
             }
         }
     }

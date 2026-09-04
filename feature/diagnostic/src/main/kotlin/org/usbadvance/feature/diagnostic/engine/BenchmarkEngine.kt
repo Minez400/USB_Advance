@@ -21,8 +21,14 @@ class BenchmarkEngine {
         val sectorSize = blockDevice.sectorSize
         val chunkSizeSectors = 128 // 64 KB por transação
         val chunkSizeBytes = chunkSizeSectors * sectorSize
-        val totalTestBytes = testSizeMb.toLong() * 1024 * 1024
-        val totalChunks = totalTestBytes / chunkSizeBytes
+        val maxUsableSectors = maxOf(0L, blockDevice.totalSectors - 2048L)
+        val maxTestBytes = maxUsableSectors * sectorSize
+        val requestedTestBytes = testSizeMb.toLong() * 1024 * 1024
+        val totalTestBytes = minOf(requestedTestBytes, maxTestBytes)
+        if (totalTestBytes <= 0 || chunkSizeBytes <= 0) {
+            return@withContext BenchmarkResult(0.0, 0.0, 0.0)
+        }
+        val totalChunks = maxOf(1L, totalTestBytes / chunkSizeBytes)
 
         val buffer = ByteBuffer.allocateDirect(chunkSizeBytes)
 

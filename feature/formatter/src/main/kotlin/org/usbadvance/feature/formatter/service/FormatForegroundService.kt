@@ -34,10 +34,14 @@ class FormatForegroundService : Service() {
                 action = ACTION_START
                 putExtra(EXTRA_DEVICE_NAME, deviceName)
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(intent)
+                } else {
+                    context.startService(intent)
+                }
+            } catch (e: Exception) {
+                // Previne crash por ForegroundServiceStartNotAllowedException
             }
         }
 
@@ -45,13 +49,30 @@ class FormatForegroundService : Service() {
             val intent = Intent(context, FormatForegroundService::class.java).apply {
                 action = ACTION_STOP
             }
-            context.startService(intent)
+            try {
+                context.startService(intent)
+            } catch (ignored: Exception) {}
         }
     }
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+
+        val initialNotification = buildNotification("Formatando...", "Inicializando serviço de disco...")
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    initialNotification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE or ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, initialNotification)
+            }
+        } catch (e: Exception) {
+            // Em caso de restrição do sistema
+        }
 
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(
@@ -67,19 +88,16 @@ class FormatForegroundService : Service() {
             ACTION_START -> {
                 val deviceName = intent.getStringExtra(EXTRA_DEVICE_NAME) ?: "Dispositivo USB"
                 val notification = buildNotification("Formatando $deviceName...", "Operação de gravação em andamento")
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    // Android 14 (API 34): tipos connectedDevice e dataSync
-                    startForeground(
-                        NOTIFICATION_ID,
-                        notification,
-                        ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE or ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-                    )
-                } else {
-                    startForeground(NOTIFICATION_ID, notification)
-                }
+                val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                manager.notify(NOTIFICATION_ID, notification)
             }
             ACTION_STOP -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                } else {
+                    @Suppress("DEPRECATION")
+                    stopForeground(true)
+                }
                 stopSelf()
             }
         }

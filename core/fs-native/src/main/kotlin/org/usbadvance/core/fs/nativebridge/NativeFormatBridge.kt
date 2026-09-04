@@ -53,9 +53,7 @@ object NativeFormatBridge {
         val callback = object : NativeIoCallback {
             override fun onWriteSectors(lba: Long, count: Int, data: ByteArray): Boolean {
                 return try {
-                    val buffer = ByteBuffer.allocateDirect(data.size)
-                    buffer.put(data)
-                    buffer.flip()
+                    val buffer = ByteBuffer.wrap(data)
 
                     // Despacha para a corrotina do IBlockDevice
                     kotlinx.coroutines.runBlocking {
@@ -64,6 +62,7 @@ object NativeFormatBridge {
                     totalBytesWritten += data.size
                     true
                 } catch (e: Exception) {
+                    System.err.println("Erro na gravação JNI no LBA $lba: ${e.message}")
                     false
                 }
             }

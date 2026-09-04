@@ -101,7 +101,7 @@ class GptEngine {
 
         // 5. Grava o array de partições de backup no final do disco
         val backupEntriesLba = totalSectors - entriesSectors - 1L
-        entriesBuffer.flip()
+        entriesBuffer.rewind()
         blockDevice.writeSectors(backupEntriesLba, entriesSectors, entriesBuffer)
 
         // 6. Grava o GPT Header Secundário no último LBA (totalSectors - 1)

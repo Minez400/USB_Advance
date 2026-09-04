@@ -1,5 +1,6 @@
 package org.usbadvance
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -52,6 +53,21 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (::usbHostDetector.isInitialized) {
+            usbHostDetector.refreshDevices()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::usbHostDetector.isInitialized) {
+            usbHostDetector.stopListening()
+        }
+    }
 }
 
 @Composable
@@ -71,9 +87,11 @@ fun UsbAdvanceNavGraph(
             DeviceListScreen(
                 viewModel = deviceListViewModel,
                 onDeviceSelected = { device ->
-                    selectedDevice = device
-                    formatterViewModel.selectDevice(device)
-                    navController.navigate("format_wizard")
+                    deviceListViewModel.selectDevice(device) { readyDevice ->
+                        selectedDevice = readyDevice
+                        formatterViewModel.selectDevice(readyDevice)
+                        navController.navigate("format_wizard")
+                    }
                 }
             )
         }

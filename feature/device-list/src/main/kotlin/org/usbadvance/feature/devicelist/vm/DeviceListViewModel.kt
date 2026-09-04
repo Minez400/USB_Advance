@@ -49,6 +49,26 @@ class DeviceListViewModel(
         usbHostDetector.refreshDevices()
     }
 
+    fun selectDevice(device: IStorageDevice, onDeviceReady: (IStorageDevice) -> Unit) {
+        if (device.busType == org.usbadvance.core.storage.api.StorageBusType.USB && device.geometry.capacityBytes <= 0) {
+            viewModelScope.launch {
+                _uiState.value = _uiState.value.copy(isLoading = true)
+                val granted = usbHostDetector.requestPermission(device)
+                _uiState.value = _uiState.value.copy(isLoading = false)
+                if (granted) {
+                    val updated = _uiState.value.devices.firstOrNull { it.id == device.id } ?: device
+                    onDeviceReady(updated)
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        errorMessage = "Permissão USB necessária para acessar e formatar o dispositivo."
+                    )
+                }
+            }
+        } else {
+            onDeviceReady(device)
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         usbHostDetector.stopListening()

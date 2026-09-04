@@ -25,9 +25,14 @@ Java_org_usbadvance_core_fs_nativebridge_NativeFormatBridge_nativeFormat(
     jboolean disable_journal,
     jobject io_callback
 ) {
-    const char* label_cstr = env->GetStringUTFChars(volume_label, nullptr);
-    std::string label = label_cstr ? label_cstr : "";
-    if (label_cstr) env->ReleaseStringUTFChars(volume_label, label_cstr);
+    std::string label = "";
+    if (volume_label != nullptr) {
+        const char* label_cstr = env->GetStringUTFChars(volume_label, nullptr);
+        if (label_cstr) {
+            label = label_cstr;
+            env->ReleaseStringUTFChars(volume_label, label_cstr);
+        }
+    }
 
     NativeFormatParams params{
         .start_lba = static_cast<uint64_t>(start_lba),
