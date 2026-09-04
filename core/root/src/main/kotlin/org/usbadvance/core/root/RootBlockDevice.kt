@@ -9,7 +9,7 @@ import java.io.IOException
 import java.nio.ByteBuffer
 
 /**
- * Implementação de IBlockDevice para dispositivos com Root, acessando diretamente nós /dev/block/*.
+ * Implementação de IBlockDevice para dispositivos com Root, acessando diretamente nós /dev/block/sdX.
  */
 class RootBlockDevice(
     private val blockDevicePath: String,
