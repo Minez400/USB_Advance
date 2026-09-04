@@ -67,8 +67,17 @@ class UsbHostDetector(private val context: Context) {
         for ((_, usbDevice) in deviceList) {
             val massStorageIntf = findMassStorageInterface(usbDevice) ?: continue
 
-            // Verifica permissão
+            // Verifica permissão e obtém geometria real se disponível
             val hasPermission = usbManager.hasPermission(usbDevice)
+            val geometry = if (hasPermission) {
+                try {
+                    queryCapacitySafely(usbDevice, massStorageIntf)
+                } catch (e: Exception) {
+                    DiskGeometry(512, 0L)
+                }
+            } else {
+                DiskGeometry(512, 0L)
+            }
 
             val vendorName = usbDevice.manufacturerName ?: "Dispositivo USB"
             val productName = usbDevice.productName ?: "Armazenamento OTG"
@@ -83,7 +92,7 @@ class UsbHostDetector(private val context: Context) {
                 revision = "1.00",
                 serialNumber = serial,
                 busType = StorageBusType.USB,
-                geometry = DiskGeometry(512, 1024), // Geometria atualizada na abertura
+                geometry = geometry,
                 partitionTableType = PartitionTableType.MBR,
                 partitions = emptyList(),
                 isRemovable = true,
@@ -96,6 +105,36 @@ class UsbHostDetector(private val context: Context) {
         }
 
         _connectedDevices.value = detectedList
+    }
+
+    private fun queryCapacitySafely(device: UsbDevice, usbInterface: UsbInterface): DiskGeometry {
+        val connection = usbManager.openDevice(device) ?: return DiskGeometry(512, 0L)
+        try {
+            if (!connection.claimInterface(usbInterface, true)) {
+                return DiskGeometry(512, 0L)
+            }
+            var inEndpoint: UsbEndpoint? = null
+            var outEndpoint: UsbEndpoint? = null
+            for (i in 0 until usbInterface.endpointCount) {
+                val ep = usbInterface.getEndpoint(i)
+                if (ep.type == UsbConstants.USB_ENDPOINT_XFER_BULK) {
+                    if (ep.direction == UsbConstants.USB_DIR_IN) inEndpoint = ep else outEndpoint = ep
+                }
+            }
+            if (inEndpoint == null || outEndpoint == null) return DiskGeometry(512, 0L)
+
+            val botHandler = BotProtocolHandler(connection, usbInterface, inEndpoint, outEndpoint)
+            val capCdb = ScsiCommands.readCapacity10()
+            val capBuf = ByteBuffer.allocate(8)
+            botHandler.executeCommand(capCdb, capBuf, directionIn = true)
+            val capInfo = ScsiCommands.parseReadCapacity10Response(capBuf.array())
+            return DiskGeometry(capInfo.sectorSize, capInfo.totalSectors)
+        } finally {
+            try {
+                connection.releaseInterface(usbInterface)
+                connection.close()
+            } catch (ignored: Exception) {}
+        }
     }
 
     private fun openUsbBlockDevice(device: UsbDevice, usbInterface: UsbInterface): UsbBlockDevice {

@@ -86,4 +86,29 @@ class PartitionTests {
         assertEquals(GptEngine.GPT_SIGNATURE, backupSig)
         assertTrue(virtualDisk.syncCalled)
     }
+
+    @Test
+    fun testMbrOverflowClampForDisksLargerThan2Tb() = runBlocking {
+        // Simula disco de 6 TB (12.884.901.888 setores de 512B)
+        val virtualLargeDisk = object : org.usbadvance.core.storage.api.IBlockDevice {
+            override val sectorSize: Int = 512
+            override val totalSectors: Long = 12884901888L
+            override suspend fun readSectors(lba: Long, count: Int, destination: ByteBuffer) {}
+            override suspend fun writeSectors(lba: Long, count: Int, source: ByteBuffer) {}
+            override suspend fun eraseSectors(lba: Long, count: Int) {}
+            override suspend fun sync() {}
+            override suspend fun isWriteProtected(): Boolean = false
+            override fun close() {}
+        }
+
+        val mbrEngine = MbrEngine()
+        val written = mbrEngine.writeSinglePartition(
+            blockDevice = virtualLargeDisk,
+            fsType = FilesystemType.EXFAT,
+            bootable = false
+        )
+
+        // Deve ser rigorosamente cortado em 0xFFFFFFFFL para não estourar os 32 bits do MBR
+        assertEquals(0xFFFFFFFFL, written.sectorCount)
+    }
 }

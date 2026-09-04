@@ -43,7 +43,11 @@ class UsbPermissionManager(private val context: Context) {
 
             val filter = IntentFilter(ACTION_USB_PERMISSION)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+                try {
+                    context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
+                } catch (e: Exception) {
+                    context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+                }
             } else {
                 context.registerReceiver(receiver, filter)
             }

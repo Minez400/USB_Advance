@@ -64,7 +64,9 @@ class MbrEngine {
             "O disco é pequeno demais para particionamento MBR alinhado. Total: $totalSectors setores."
         }
 
-        val sectorCount = totalSectors - startLba
+        val rawSectorCount = totalSectors - startLba
+        // MBR é limitado a endereçamento de 32 bits (máximo 0xFFFFFFFF setores = 2 TB em 512B)
+        val sectorCount = if (rawSectorCount > 0xFFFFFFFFL) 0xFFFFFFFFL else rawSectorCount
         val partitionRecord = MbrPartitionRecord(
             bootable = bootable,
             typeByte = MbrPartitionRecord.getTypeByteFor(fsType),

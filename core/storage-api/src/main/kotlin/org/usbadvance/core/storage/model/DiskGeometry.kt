@@ -12,8 +12,8 @@ data class DiskGeometry(
         require(sectorSize > 0 && (sectorSize and (sectorSize - 1)) == 0) {
             "O tamanho do setor deve ser uma potência de 2 (ex: 512, 4096). Atual: $sectorSize"
         }
-        require(totalSectors > 0) {
-            "O número total de setores deve ser positivo. Atual: $totalSectors"
+        require(totalSectors >= 0) {
+            "O número total de setores não pode ser negativo. Atual: $totalSectors"
         }
     }
 
@@ -22,6 +22,7 @@ data class DiskGeometry(
      */
     fun getFormattedCapacity(): String {
         val bytes = capacityBytes
+        if (bytes <= 0) return "Tocar p/ Conectar"
         if (bytes < 1024) return "$bytes B"
         val exp = (Math.log(bytes.toDouble()) / Math.log(1024.0)).toInt()
         val pre = "KMGTPE"[exp - 1]

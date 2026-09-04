@@ -93,49 +93,51 @@ bool Ext4Formatter::format(
     if (label.length() > 16) label.resize(16);
     std::memcpy(&sb_data[120], label.data(), label.length());
 
-    progress_fn(40.0f, "Gravando Superblock no LBA 2...");
+    progress_fn(40.0f, "Gravando Superblock no Bloco 0 (offset 1024)...");
 
-    // LBA do Superblock = start_lba + (1024 / sector_size)
-    uint64_t sb_lba = params.start_lba + (1024 / sector_size);
-    uint32_t sb_sectors = 1024 / sector_size;
-    if (!write_fn(sb_lba, sb_sectors, sb_data.data())) return false;
+    // Grava o Bloco 0 completo (4096 bytes) com o Superblock ext4 no offset de 1024 bytes
+    std::vector<uint8_t> block0(block_size, 0);
+    std::memcpy(&block0[1024], sb_data.data(), 1024);
+    if (!write_fn(params.start_lba, sectors_per_block, block0.data())) return false;
 
     progress_fn(60.0f, "Inicializando Tabela de Descritores de Grupo (GDT)...");
 
-    // GDT (Group Descriptor Table) fica no Bloco 1 (offset 4096 = 8 setores em 512B)
-    // Para 64-bit ext4, cada descritor tem 64 bytes
+    // Para 64-bit ext4, cada descritor de grupo tem 64 bytes
     const uint32_t desc_size = 64;
-    std::vector<uint8_t> gdt_data(num_groups * desc_size, 0);
+    const uint32_t gdt_blocks = (num_groups * desc_size + block_size - 1) / block_size;
+    const uint32_t itbl_blocks = (inodes_per_group * inode_size) / block_size; // 512 blocos em 4KB
+    std::vector<uint8_t> gdt_data(gdt_blocks * block_size, 0);
 
     for (uint32_t g = 0; g < num_groups; ++g) {
         uint8_t* desc = &gdt_data[g * desc_size];
-        uint64_t grp_start_block = g * blocks_per_group;
-        uint32_t block_bitmap = grp_start_block + 2;
-        uint32_t inode_bitmap = grp_start_block + 3;
-        uint32_t inode_table = grp_start_block + 4;
+        uint64_t grp_start_block = static_cast<uint64_t>(g) * blocks_per_group;
+
+        // No Grupo 0, reserva Bloco 0 (Superblock) + gdt_blocks (GDT)
+        uint32_t reserved_overhead = (g == 0) ? (1 + gdt_blocks) : 0;
+        uint32_t block_bitmap = grp_start_block + reserved_overhead;
+        uint32_t inode_bitmap = block_bitmap + 1;
+        uint32_t inode_table = inode_bitmap + 1;
 
         *reinterpret_cast<uint32_t*>(&desc[0]) = block_bitmap;
         *reinterpret_cast<uint32_t*>(&desc[4]) = inode_bitmap;
         *reinterpret_cast<uint32_t*>(&desc[8]) = inode_table;
-        *reinterpret_cast<uint16_t*>(&desc[12]) = static_cast<uint16_t>(blocks_per_group - 500);
+        *reinterpret_cast<uint16_t*>(&desc[12]) = static_cast<uint16_t>(blocks_per_group - (reserved_overhead + 2 + itbl_blocks));
         *reinterpret_cast<uint16_t*>(&desc[14]) = static_cast<uint16_t>(inodes_per_group - 11);
         *reinterpret_cast<uint16_t*>(&desc[16]) = (g == 0) ? 2 : 0; // Diretórios existentes
         *reinterpret_cast<uint16_t*>(&desc[18]) = 0x0004; // Flags: EXT4_BG_INODE_ZEROED
     }
 
-    uint64_t gdt_lba = params.start_lba + sectors_per_block; // Bloco 1
-    uint32_t gdt_sectors = static_cast<uint32_t>((gdt_data.size() + sector_size - 1) / sector_size);
-    gdt_data.resize(gdt_sectors * sector_size, 0);
-
+    uint64_t gdt_lba = params.start_lba + sectors_per_block; // Bloco 1 (após bloco 0)
+    uint32_t gdt_sectors = gdt_blocks * sectors_per_block;
     if (!write_fn(gdt_lba, gdt_sectors, gdt_data.data())) return false;
 
     progress_fn(80.0f, "Criando Inode Raiz (Inode 2)...");
 
     // Inode 2 (Diretório Raiz):
-    // Fica na Inode Table do Grupo 0 (Bloco 4 = offset 16384 bytes)
-    // Offset do Inode 2 = 1 * inode_size (1-indexed: Inode 1 = bad blocks, Inode 2 = root)
+    // Localizado na Inode Table do Grupo 0
+    uint32_t group0_itbl_block = (1 + gdt_blocks) + 2; // Após superblock, gdt, block_bitmap e inode_bitmap
     std::vector<uint8_t> inode_table_block(block_size, 0);
-    uint8_t* root_inode = &inode_table_block[1 * inode_size];
+    uint8_t* root_inode = &inode_table_block[1 * inode_size]; // Inode 2 (índice 1)
 
     *reinterpret_cast<uint16_t*>(&root_inode[0]) = 0x41ED; // i_mode: Diretório (0040000) com permissão 0755
     *reinterpret_cast<uint16_t*>(&root_inode[2]) = 0; // i_uid = 0 (root)
@@ -153,14 +155,14 @@ bool Ext4Formatter::format(
     *reinterpret_cast<uint16_t*>(&root_inode[44]) = 4; // eh_max = 4
     *reinterpret_cast<uint16_t*>(&root_inode[46]) = 0; // eh_depth = 0 (folha)
 
-    // Extent 1: aponta para o bloco de dados do diretório raiz (bloco 600 por exemplo)
-    uint32_t root_data_block = 600;
+    // Extent 1: aponta para o primeiro bloco de dados livre após a Inode Table
+    uint32_t root_data_block = group0_itbl_block + itbl_blocks;
     *reinterpret_cast<uint32_t*>(&root_inode[52]) = 0; // ee_block = 0
     *reinterpret_cast<uint16_t*>(&root_inode[56]) = 1; // ee_len = 1 bloco
     *reinterpret_cast<uint16_t*>(&root_inode[58]) = 0; // ee_start_hi
     *reinterpret_cast<uint32_t*>(&root_inode[60]) = root_data_block; // ee_start_lo
 
-    uint64_t inode_table_lba = params.start_lba + (4 * sectors_per_block);
+    uint64_t inode_table_lba = params.start_lba + (static_cast<uint64_t>(group0_itbl_block) * sectors_per_block);
     if (!write_fn(inode_table_lba, sectors_per_block, inode_table_block.data())) return false;
 
     // Inicializa o bloco de dados do diretório raiz (entradas "." e "..")
@@ -181,7 +183,7 @@ bool Ext4Formatter::format(
     dir_block[20] = '.';
     dir_block[21] = '.';
 
-    uint64_t root_data_lba = params.start_lba + (root_data_block * sectors_per_block);
+    uint64_t root_data_lba = params.start_lba + (static_cast<uint64_t>(root_data_block) * sectors_per_block);
     if (!write_fn(root_data_lba, sectors_per_block, dir_block.data())) return false;
 
     progress_fn(100.0f, "Formatação ext4 concluída com sucesso!");

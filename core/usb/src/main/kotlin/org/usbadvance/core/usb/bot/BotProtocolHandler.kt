@@ -48,26 +48,38 @@ class BotProtocolHandler(
             throw IOException("Falha ao enviar Command Block Wrapper (CBW). Bytes enviados: $cbwSent")
         }
 
-        // 2. Transfere dados (se houver)
+        // 2. Transfere dados (se houver) em blocos seguros de até 16 KB (16384 bytes)
         if (dataBuffer != null && transferLength > 0) {
+            val maxChunkSize = 16384 // Limite máximo seguro do kernel usbfs no Android
             val transferArray = ByteArray(transferLength)
+
             if (!directionIn) {
                 // Host to Device (Data OUT)
                 val currentPos = dataBuffer.position()
                 dataBuffer.get(transferArray)
                 dataBuffer.position(currentPos)
 
-                val sent = connection.bulkTransfer(outEndpoint, transferArray, transferLength, defaultTimeoutMs)
-                if (sent < 0) {
-                    throw IOException("Erro durante envio de dados SCSI no endpoint Bulk OUT: $sent")
+                var offset = 0
+                while (offset < transferLength) {
+                    val chunk = minOf(transferLength - offset, maxChunkSize)
+                    val sent = connection.bulkTransfer(outEndpoint, transferArray, offset, chunk, defaultTimeoutMs)
+                    if (sent <= 0) {
+                        throw IOException("Erro durante envio de dados SCSI no endpoint Bulk OUT: $sent")
+                    }
+                    offset += sent
                 }
             } else {
                 // Device to Host (Data IN)
-                val received = connection.bulkTransfer(inEndpoint, transferArray, transferLength, defaultTimeoutMs)
-                if (received < 0) {
-                    throw IOException("Erro durante recepção de dados SCSI no endpoint Bulk IN: $received")
+                var offset = 0
+                while (offset < transferLength) {
+                    val chunk = minOf(transferLength - offset, maxChunkSize)
+                    val received = connection.bulkTransfer(inEndpoint, transferArray, offset, chunk, defaultTimeoutMs)
+                    if (received <= 0) {
+                        throw IOException("Erro durante recepção de dados SCSI no endpoint Bulk IN: $received")
+                    }
+                    offset += received
                 }
-                dataBuffer.put(transferArray, 0, received)
+                dataBuffer.put(transferArray, 0, offset)
             }
         }
 

@@ -139,9 +139,18 @@ bool ExFatFormatter::format(
     boot_region[10 * sector_size + 510] = 0x55;
     boot_region[10 * sector_size + 511] = 0xAA;
 
-    // Setor 11: Boot Checksum Sector
-    uint32_t checksum = calculateBootChecksum(boot_region.data(), 11 * sector_size);
-    uint32_t* chk_ptr = reinterpret_cast<uint32_t*>(&boot_region[11 * sector_size]);
+    // Cálculo dinâmico de clusters necessários para cada estrutura
+    uint32_t bitmap_bytes = (cluster_count + 7) / 8;
+    uint32_t bitmap_clusters = (bitmap_bytes + cluster_size - 1) / cluster_size;
+    uint32_t upcase_clusters = (5120 + cluster_size - 1) / cluster_size;
+    uint32_t upcase_cluster = 2 + bitmap_clusters;
+    uint32_t root_dir_cluster = upcase_cluster + upcase_clusters;
+
+    // Atualiza o primeiro cluster do Root Directory no VBR (offset 96)
+    *reinterpret_cast<uint32_t*>(&vbr[96]) = root_dir_cluster;
+
+    // Recalcula o checksum do boot sector agora com o cluster raiz exato
+    checksum = calculateBootChecksum(boot_region.data(), 11 * sector_size);
     for (size_t k = 0; k < sector_size / 4; ++k) {
         chk_ptr[k] = checksum;
     }
@@ -156,37 +165,48 @@ bool ExFatFormatter::format(
 
     progress_fn(45.0f, "Inicializando tabela FAT exFAT...");
 
-    // Inicializa a FAT:
-    // Cluster 0 (0xFFFFFFF8), Cluster 1 (0xFFFFFFFF)
-    // Cluster 2 (Allocation Bitmap): 0xFFFFFFFF (EOC)
-    // Cluster 3 (Upcase Table): 0xFFFFFFFF (EOC)
-    // Cluster 4 (Root Directory): 0xFFFFFFFF (EOC)
+    // Inicializa a FAT com suporte a cadeias multi-cluster
     std::vector<uint8_t> fat_buf(sector_size, 0);
     uint32_t* fat = reinterpret_cast<uint32_t*>(fat_buf.data());
-    fat[0] = 0xFFFFFFF8;
-    fat[1] = 0xFFFFFFFF;
-    fat[2] = 0xFFFFFFFF; // Cluster 2
-    fat[3] = 0xFFFFFFFF; // Cluster 3
-    fat[4] = 0xFFFFFFFF; // Cluster 4
+    fat[0] = 0xFFFFFFF8; // Media ID
+    fat[1] = 0xFFFFFFFF; // Reserved
+
+    // Encadeamento dos clusters do Allocation Bitmap
+    for (uint32_t c = 0; c < bitmap_clusters; ++c) {
+        uint32_t current_cl = 2 + c;
+        fat[current_cl] = (c == bitmap_clusters - 1) ? 0xFFFFFFFF : (current_cl + 1);
+    }
+
+    // Encadeamento dos clusters da Upcase Table
+    for (uint32_t u = 0; u < upcase_clusters; ++u) {
+        uint32_t current_cl = upcase_cluster + u;
+        fat[current_cl] = (u == upcase_clusters - 1) ? 0xFFFFFFFF : (current_cl + 1);
+    }
+
+    // Cluster do Diretório Raiz
+    fat[root_dir_cluster] = 0xFFFFFFFF;
 
     uint64_t fat_lba = params.start_lba + fat_offset;
     if (!write_fn(fat_lba, 1, fat_buf.data())) return false;
 
-    progress_fn(60.0f, "Criando Allocation Bitmap...");
+    progress_fn(60.0f, "Criando Allocation Bitmap multi-cluster...");
 
     // Cluster 2: Allocation Bitmap
-    // Marca clusters 2, 3 e 4 como ocupados (bits 0, 1 e 2) -> valor 0x07
-    uint32_t bitmap_bytes = (cluster_count + 7) / 8;
+    // Marca todos os clusters alocados (Bitmap + Upcase + Root)
+    uint32_t total_allocated_clusters = bitmap_clusters + upcase_clusters + 1;
     uint32_t bitmap_sectors = (bitmap_bytes + sector_size - 1) / sector_size;
     std::vector<uint8_t> bitmap(bitmap_sectors * sector_size, 0);
-    bitmap[0] = 0x07; // Clusters 2, 3 e 4 alocados
+
+    for (uint32_t k = 0; k < total_allocated_clusters; ++k) {
+        bitmap[k / 8] |= static_cast<uint8_t>(1u << (k % 8));
+    }
 
     uint64_t cluster2_lba = params.start_lba + cluster_heap_offset;
     if (!write_fn(cluster2_lba, bitmap_sectors, bitmap.data())) return false;
 
     progress_fn(75.0f, "Gerando Upcase Table comprimida...");
 
-    // Cluster 3: Upcase Table
+    // Upcase Table
     std::vector<uint8_t> upcase_table;
     generateUpcaseTable(upcase_table);
     uint32_t upcase_sectors = static_cast<uint32_t>((upcase_table.size() + sector_size - 1) / sector_size);
@@ -198,13 +218,13 @@ bool ExFatFormatter::format(
         upcase_checksum = ((upcase_checksum << 31) | (upcase_checksum >> 1)) + upcase_table[b];
     }
 
-    uint64_t cluster3_lba = cluster2_lba + sectors_per_cluster;
-    if (!write_fn(cluster3_lba, upcase_sectors, upcase_table.data())) return false;
+    uint64_t upcase_lba = params.start_lba + cluster_heap_offset + (static_cast<uint64_t>(upcase_cluster - 2) * sectors_per_cluster);
+    if (!write_fn(upcase_lba, upcase_sectors, upcase_table.data())) return false;
 
     progress_fn(90.0f, "Configurando Diretório Raiz e Volume Label...");
 
-    // Cluster 4: Root Directory (3 entradas de 32 bytes cada)
-    uint64_t cluster4_lba = cluster3_lba + sectors_per_cluster;
+    // Root Directory (3 entradas de 32 bytes cada)
+    uint64_t root_dir_lba = params.start_lba + cluster_heap_offset + (static_cast<uint64_t>(root_dir_cluster - 2) * sectors_per_cluster);
     std::vector<uint8_t> root_dir(sectors_per_cluster * sector_size, 0);
 
     // Entrada 1: Volume Label Entry (Tipo 0x83)
@@ -228,10 +248,10 @@ bool ExFatFormatter::format(
     uint8_t* u_ent = &root_dir[64];
     u_ent[0] = 0x82; // EntryType: Upcase Table
     *reinterpret_cast<uint32_t*>(&u_ent[4]) = upcase_checksum; // TableChecksum
-    *reinterpret_cast<uint32_t*>(&u_ent[20]) = 3; // First Cluster = 3
+    *reinterpret_cast<uint32_t*>(&u_ent[20]) = upcase_cluster; // First Cluster dinâmico
     *reinterpret_cast<uint64_t*>(&u_ent[24]) = 5120; // DataLength
 
-    if (!write_fn(cluster4_lba, sectors_per_cluster, root_dir.data())) return false;
+    if (!write_fn(root_dir_lba, sectors_per_cluster, root_dir.data())) return false;
 
     progress_fn(100.0f, "Formatação exFAT concluída com sucesso!");
     return true;
