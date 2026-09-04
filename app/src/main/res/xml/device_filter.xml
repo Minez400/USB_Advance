@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Filtro para dispositivos USB Mass Storage Class (0x08), SCSI (0x06), Bulk-Only Transport (0x50) -->
+    <usb-device class="8" subclass="6" protocol="80" />
+</resources>

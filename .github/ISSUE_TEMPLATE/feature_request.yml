@@ -1,0 +1,27 @@
+name: Solicitação de Funcionalidade
+description: Sugira uma nova ideia ou melhoria para o USB Advance
+title: "[FEAT]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: Tem uma ideia para tornar o USB Advance ainda melhor? Adoraríamos ouvi-la!
+  - type: textarea
+    id: problem
+    attributes:
+      label: Sua sugestão resolve algum problema existente?
+      description: Uma explicação clara do que não é possível fazer hoje.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solução desejada
+      description: Como você imagina que essa funcionalidade deveria se comportar?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+      description: Alguma outra abordagem foi avaliada?
