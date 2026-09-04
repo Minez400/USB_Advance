@@ -125,7 +125,7 @@ fun IsoBurnerScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Card do Dispositivo Destino
+            // Target device summary card
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -156,7 +156,7 @@ fun IsoBurnerScreen(
                 }
             }
 
-            // Card Seleção de Arquivo ISO
+            // ISO/IMG image file picker card
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -202,7 +202,7 @@ fun IsoBurnerScreen(
                             }
                         }
 
-                        // Verificação de capacidade
+                        // Storage capacity validation
                         if (fileSizeBytes > device.geometry.capacityBytes) {
                             Spacer(modifier = Modifier.height(10.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -239,7 +239,7 @@ fun IsoBurnerScreen(
                 }
             }
 
-            // Alerta de Sobrescrita de Dados
+            // Data overwrite critical warning
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -260,7 +260,7 @@ fun IsoBurnerScreen(
                 }
             }
 
-            // Progresso da Gravação
+            // Raw stream burn progress
             AnimatedVisibility(visible = isBurning || burnProgress != null) {
                 burnProgress?.let { prog ->
                     Box(
@@ -327,7 +327,7 @@ fun IsoBurnerScreen(
                 }
             }
 
-            // Resultado Final
+            // Final burn result
             burnResult?.let { res ->
                 Box(
                     modifier = Modifier
@@ -375,7 +375,7 @@ fun IsoBurnerScreen(
                 }
             }
 
-            // Botão Principal de Ação
+            // Main action button
             val canStartBurn = selectedUri != null && fileSizeBytes > 0 && fileSizeBytes <= device.geometry.capacityBytes && !isBurning
 
             Button(
@@ -420,7 +420,7 @@ fun IsoBurnerScreen(
         }
     }
 
-    // Diálogo de Confirmação de Gravação
+    // Safety burn confirmation dialog
     if (showConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },

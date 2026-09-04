@@ -8,7 +8,7 @@ import java.nio.ByteOrder
 import java.util.Random
 
 /**
- * Motor de leitura, validação e gravação de tabelas de partição MBR (Master Boot Record).
+ * Engine for reading, validating, and writing Master Boot Record (MBR) partition tables.
  */
 class MbrEngine {
 
@@ -20,7 +20,7 @@ class MbrEngine {
     }
 
     /**
-     * Lê e decodifica as partições MBR presentes no LBA 0 do dispositivo.
+     * Reads and decodes MBR partition records located at LBA 0 of the block device.
      */
     suspend fun readPartitions(blockDevice: IBlockDevice): List<MbrPartitionRecord> {
         val buffer = ByteBuffer.allocateDirect(blockDevice.sectorSize)
@@ -29,11 +29,11 @@ class MbrEngine {
         blockDevice.readSectors(0L, 1, buffer)
         buffer.flip()
 
-        // Verifica a assinatura final 0x55 0xAA
+        // Validate standard 0x55AA boot record signature at offset 510
         buffer.position(SIGNATURE_OFFSET)
         val signature = buffer.short
         if (signature != MBR_SIGNATURE) {
-            return emptyList() // Disco não particionado em MBR ou corrompido
+            return emptyList() // Drive does not contain a valid MBR table
         }
 
         val partitions = mutableListOf<MbrPartitionRecord>()
@@ -48,8 +48,8 @@ class MbrEngine {
     }
 
     /**
-     * Grava uma nova tabela MBR contendo uma única partição primária ocupando todo o disco,
-     * alinhada no LBA 2048 (1 MiB) para máxima performance em memórias Flash.
+     * Writes a new MBR table containing a single primary partition spanning usable disk space,
+     * aligned to LBA 2048 (1 MiB boundary) to maximize Flash NAND read/write efficiency.
      */
     suspend fun writeSinglePartition(
         blockDevice: IBlockDevice,
@@ -61,11 +61,11 @@ class MbrEngine {
 
         val startLba = PartitionAligner.getFirstAlignedLba(sectorSize)
         require(totalSectors > startLba + 2048) {
-            "O disco é pequeno demais para particionamento MBR alinhado. Total: $totalSectors setores."
+            "Drive capacity is too small for aligned MBR partitioning. Total: $totalSectors sectors."
         }
 
         val rawSectorCount = totalSectors - startLba
-        // MBR é limitado a endereçamento de 32 bits (máximo 0xFFFFFFFF setores = 2 TB em 512B)
+        // MBR is constrained to 32-bit sector addressing (max 0xFFFFFFFF sectors = 2 TiB with 512B sectors)
         val sectorCount = if (rawSectorCount > 0xFFFFFFFFL) 0xFFFFFFFFL else rawSectorCount
         val partitionRecord = MbrPartitionRecord(
             bootable = bootable,
@@ -77,23 +77,23 @@ class MbrEngine {
         val buffer = ByteBuffer.allocateDirect(sectorSize)
         buffer.order(ByteOrder.LITTLE_ENDIAN)
 
-        // Limpa todo o setor 0
+        // Clear sector 0
         while (buffer.hasRemaining()) {
             buffer.put(0.toByte())
         }
         buffer.clear()
 
-        // Gera Disk Signature pseudo-aleatória de 4 bytes no offset 440
+        // Generate pseudo-random 4-byte NT disk signature at offset 440
         buffer.position(DISK_SIGNATURE_OFFSET)
         buffer.putInt(Random().nextInt())
 
-        // Escreve a primeira partição primária no offset 446
+        // Write first primary partition record at offset 446
         buffer.position(PARTITION_TABLE_OFFSET)
         partitionRecord.writeTo(buffer)
 
-        // As entradas 2, 3 e 4 permanecem zeradas
+        // Partition slots 2, 3, and 4 remain zeroed
 
-        // Grava a assinatura 0x55 0xAA no offset 510
+        // Write 0x55AA boot signature at offset 510
         buffer.position(SIGNATURE_OFFSET)
         buffer.putShort(MBR_SIGNATURE)
 
@@ -105,7 +105,7 @@ class MbrEngine {
     }
 
     /**
-     * Apaga os primeiros setores do disco para remover tabelas anteriores.
+     * Wipes LBA 0 to invalidate previous partition tables.
      */
     suspend fun wipeMbr(blockDevice: IBlockDevice) {
         val buffer = ByteBuffer.allocateDirect(blockDevice.sectorSize)

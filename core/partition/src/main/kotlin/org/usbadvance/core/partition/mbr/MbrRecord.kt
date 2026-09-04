@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
- * Registro de uma entrada de partição de 16 bytes na tabela MBR.
+ * 16-byte partition record entry in the Master Boot Record (MBR) partition table.
  */
 data class MbrPartitionRecord(
     val bootable: Boolean,
@@ -18,7 +18,7 @@ data class MbrPartitionRecord(
         return when (unsignedType) {
             0x04, 0x06, 0x0E -> FilesystemType.FAT16
             0x0B, 0x0C -> FilesystemType.FAT32
-            0x07 -> FilesystemType.EXFAT // Pode ser exFAT ou NTFS; a leitura do VBR desambigua
+            0x07 -> FilesystemType.EXFAT // Can be exFAT or NTFS; VBR inspection disambiguates
             0x83 -> FilesystemType.EXT4
             else -> null
         }
@@ -30,7 +30,7 @@ data class MbrPartitionRecord(
         try {
             buffer.put(if (bootable) 0x80.toByte() else 0x00.toByte())
 
-            // CHS Start: LBA 2048 mapeia para CHS arbitrário legado (1023, 254, 63)
+            // CHS Start: LBA 2048 maps to legacy arbitrary CHS (1023, 254, 63)
             buffer.put(0x00.toByte())
             buffer.put(0x20.toByte())
             buffer.put(0x21.toByte())
@@ -55,14 +55,14 @@ data class MbrPartitionRecord(
             buffer.order(ByteOrder.LITTLE_ENDIAN)
             try {
                 val status = buffer.get().toInt() and 0xFF
-                // Ignora CHS start (3 bytes)
+                // Skip legacy CHS start bytes (3 bytes)
                 buffer.get()
                 buffer.get()
                 buffer.get()
 
                 val type = buffer.get()
 
-                // Ignora CHS end (3 bytes)
+                // Skip legacy CHS end bytes (3 bytes)
                 buffer.get()
                 buffer.get()
                 buffer.get()

@@ -11,6 +11,10 @@ data class BenchmarkResult(
     val totalTestedMb: Double
 )
 
+/**
+ * Sequential read and write throughput benchmarking engine for USB Mass Storage devices.
+ * Uses 64 KB aligned batches (128 sectors) to maximize USB bus bandwidth utilization.
+ */
 class BenchmarkEngine {
 
     suspend fun runBenchmark(
@@ -19,7 +23,7 @@ class BenchmarkEngine {
         onProgress: (Float, String) -> Unit
     ): BenchmarkResult = withContext(Dispatchers.IO) {
         val sectorSize = blockDevice.sectorSize
-        val chunkSizeSectors = 128 // 64 KB por transação
+        val chunkSizeSectors = 128 // 64 KB per USB BOT transaction
         val chunkSizeBytes = chunkSizeSectors * sectorSize
         val maxUsableSectors = maxOf(0L, blockDevice.totalSectors - 2048L)
         val maxTestBytes = maxUsableSectors * sectorSize
@@ -32,10 +36,10 @@ class BenchmarkEngine {
 
         val buffer = ByteBuffer.allocateDirect(chunkSizeBytes)
 
-        // 1. Teste de Leitura Sequencial
+        // 1. Sequential Read Test
         onProgress(10.0f, "Executando teste de leitura sequencial...")
         val readStartTime = System.currentTimeMillis()
-        var currentLba = 2048L // Inicia no LBA alinhado
+        var currentLba = 2048L // Start at 1 MiB-aligned LBA boundary
 
         for (i in 0 until totalChunks) {
             buffer.clear()
@@ -47,7 +51,7 @@ class BenchmarkEngine {
         val readElapsedSec = (System.currentTimeMillis() - readStartTime) / 1000.0
         val readSpeedMb = (totalTestBytes / (1024.0 * 1024.0)) / readElapsedSec
 
-        // 2. Teste de Escrita Sequencial
+        // 2. Sequential Write Test
         onProgress(50.0f, "Executando teste de escrita sequencial...")
         val writeStartTime = System.currentTimeMillis()
         currentLba = 2048L

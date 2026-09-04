@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-// Cores Modernas do USB Advance (Paleta Tecnológica & Expressiva)
+// USB Advance Modern Color Palette (High-Tech & Expressive Theme)
 val TechCyan = Color(0xFF00E5FF)
 val TechBlue = Color(0xFF00B0FF)
 val NeonGreen = Color(0xFF00E676)
@@ -67,7 +67,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun UsbAdvanceTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Padrão false para manter a estética ciano tecnológica consistente
+    dynamicColor: Boolean = false, // Defaults to false to maintain consistent cyber cyan technological aesthetic
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -76,7 +76,7 @@ fun UsbAdvanceTheme(
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
         darkTheme -> DarkColorScheme
-        else -> DarkColorScheme // Aplicativos de ferramentas de baixo nível brilham na estética escura
+        else -> DarkColorScheme // Utility block storage tools excel in dark mode aesthetics
     }
 
     MaterialTheme(

@@ -86,7 +86,7 @@ fun SafetyConfirmationDialog(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Card com dados da unidade
+                // Drive information card
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

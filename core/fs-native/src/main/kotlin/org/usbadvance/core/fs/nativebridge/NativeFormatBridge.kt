@@ -12,7 +12,8 @@ import org.usbadvance.core.storage.model.FormatStage
 import java.nio.ByteBuffer
 
 /**
- * Ponte JNI entre o subsistema Kotlin e os motores de formatação nativos C++20.
+ * JNI Bridge between Kotlin storage orchestration layers and high-performance native C++20 formatting engines.
+ * Dispatches sector write callbacks from C++ directly to IBlockDevice via NativeIoCallback.
  */
 object NativeFormatBridge {
 
@@ -20,8 +21,8 @@ object NativeFormatBridge {
         try {
             System.loadLibrary("fsnative")
         } catch (e: UnsatisfiedLinkError) {
-            // Em testes unitários na JVM sem NDK, a biblioteca nativa pode não estar presente
-            System.err.println("Aviso: fsnative não carregada (ambiente JVM puro): ${e.message}")
+            // In pure JVM unit test environments without Android NDK, native lib may not be present
+            System.err.println("Warning: fsnative library not loaded (running in pure JVM test environment): ${e.message}")
         }
     }
 
@@ -38,7 +39,7 @@ object NativeFormatBridge {
     ): Boolean
 
     /**
-     * Executa a formatação nativa chamando o motor C++20 via JNI.
+     * Executes native filesystem formatting via the C++20 engine over JNI.
      */
     suspend fun executeFormat(
         fsType: FilesystemType,
@@ -55,14 +56,14 @@ object NativeFormatBridge {
                 return try {
                     val buffer = ByteBuffer.wrap(data)
 
-                    // Despacha para a corrotina do IBlockDevice
+                    // Dispatch to IBlockDevice coroutine
                     kotlinx.coroutines.runBlocking {
                         blockDevice.writeSectors(lba, count, buffer)
                     }
                     totalBytesWritten += data.size
                     true
                 } catch (e: Exception) {
-                    System.err.println("Erro na gravação JNI no LBA $lba: ${e.message}")
+                    System.err.println("JNI block write error at LBA $lba: ${e.message}")
                     false
                 }
             }
@@ -86,7 +87,7 @@ object NativeFormatBridge {
         progressCallback.onProgress(
             FormatProgress(
                 stage = FormatStage.INITIALIZING,
-                stageDescription = "Iniciando motor nativo C++20...",
+                stageDescription = "Initializing native C++20 engine...",
                 percentage = 0.0f
             )
         )
@@ -106,7 +107,7 @@ object NativeFormatBridge {
         } catch (e: UnsatisfiedLinkError) {
             return FormatResult.Failure(
                 errorCode = ErrorCode.INTERNAL_NATIVE_ERROR,
-                errorMessage = "Biblioteca nativa fsnative não disponível: ${e.message}",
+                errorMessage = "Native library fsnative not available: ${e.message}",
                 cause = e
             )
         }
@@ -114,15 +115,15 @@ object NativeFormatBridge {
         if (!success) {
             return FormatResult.Failure(
                 errorCode = ErrorCode.IO_ERROR,
-                errorMessage = "Falha durante gravação das estruturas do sistema de arquivos."
+                errorMessage = "Failure during writing of filesystem metadata structures."
             )
         }
 
-        // Garante a sincronização de cache de hardware
+        // Flush physical hardware caches
         progressCallback.onProgress(
             FormatProgress(
                 stage = FormatStage.SYNCHRONIZING_CACHE,
-                stageDescription = "Descarregando cache de hardware Flash...",
+                stageDescription = "Flushing Flash hardware cache (SCSI SYNC)...",
                 percentage = 99.0f
             )
         )

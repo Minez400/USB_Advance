@@ -85,7 +85,7 @@ fun UsbAdvanceNavGraph(
     val deviceState by deviceListViewModel.uiState.collectAsState()
     val connectedDevices = deviceState.devices
 
-    // Retorna automaticamente para a lista se o dispositivo selecionado for desconectado fisicamente
+    // Automatically pop back to device list if the currently selected device is physically unplugged
     LaunchedEffect(connectedDevices, selectedDevice) {
         val current = selectedDevice
         if (current != null && !connectedDevices.any { it.id == current.id }) {

@@ -9,15 +9,15 @@ import org.usbadvance.core.storage.model.FilesystemType
 import org.usbadvance.core.storage.model.PartitionTableType
 
 /**
- * Gerenciador unificado de particionamento responsável por orquestrar
- * a criação, inspeção e exclusão de tabelas MBR e GPT.
+ * Unified partition manager responsible for orchestrating
+ * the creation, validation, and layout of MBR and GPT partition tables.
  */
 class PartitionManager(
     private val mbrEngine: MbrEngine = MbrEngine(),
     private val gptEngine: GptEngine = GptEngine()
 ) {
     /**
-     * Aplica o particionamento solicitado criando uma partição principal que engloba o disco.
+     * Applies requested partition scheme by creating a primary partition encompassing usable disk space.
      */
     suspend fun createSinglePartition(
         blockDevice: IBlockDevice,
@@ -56,7 +56,7 @@ class PartitionManager(
                 )
             }
             PartitionTableType.RAW_SUPERFLOPPY -> {
-                // Sem tabela de partição: o filesystem começa no LBA 0
+                // No partition table (Superfloppy mode): filesystem starts directly at LBA 0
                 GenericPartition(
                     index = 0,
                     startLba = 0L,

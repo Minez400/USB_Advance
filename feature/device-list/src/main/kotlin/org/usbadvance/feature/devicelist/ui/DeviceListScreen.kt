@@ -126,7 +126,7 @@ fun DeviceListScreen(
                     )
                 }
                 state.devices.isEmpty() -> {
-                    // Estado Vazio Estilizado
+                    // Styled empty state
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -189,7 +189,7 @@ fun DeviceListScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         item {
-                            // Hero Banner
+                            // Active USB controller status banner
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()

@@ -12,7 +12,8 @@ import java.io.IOException
 import java.nio.ByteBuffer
 
 /**
- * Implementação real de IBlockDevice operando sobre a Android USB Host API sem necessidade de Root.
+ * Concrete implementation of IBlockDevice operating on top of Android USB Host API
+ * without requiring Root privileges (userspace USB Mass Storage / SCSI over BOT).
  */
 class UsbBlockDevice(
     private val connection: UsbDeviceConnection,
@@ -26,7 +27,7 @@ class UsbBlockDevice(
         val cdb = ScsiCommands.read10(lba, count)
         val csw = botHandler.executeCommand(cdb, destination, directionIn = true)
         if (csw.status != CommandStatusWrapper.Status.COMMAND_PASSED) {
-            throw IOException("Falha no comando SCSI READ 10 para LBA $lba (Status CSW: ${csw.status})")
+            throw IOException("SCSI READ 10 command failed for LBA $lba (CSW status: ${csw.status})")
         }
     }
 
@@ -34,12 +35,12 @@ class UsbBlockDevice(
         val cdb = ScsiCommands.write10(lba, count)
         val csw = botHandler.executeCommand(cdb, source, directionIn = false)
         if (csw.status != CommandStatusWrapper.Status.COMMAND_PASSED) {
-            throw IOException("Falha no comando SCSI WRITE 10 para LBA $lba (Status CSW: ${csw.status})")
+            throw IOException("SCSI WRITE 10 command failed for LBA $lba (CSW status: ${csw.status})")
         }
     }
 
     override suspend fun eraseSectors(lba: Long, count: Int) = withContext(Dispatchers.IO) {
-        val maxChunkSectors = 128 // 64 KB por lote em setores de 512B
+        val maxChunkSectors = 128 // 64 KB per batch for 512B sectors
         val zeroBuffer = ByteBuffer.allocateDirect(maxChunkSectors * sectorSize)
         while (zeroBuffer.hasRemaining()) zeroBuffer.put(0.toByte())
 
@@ -61,7 +62,7 @@ class UsbBlockDevice(
         val cdb = ScsiCommands.synchronizeCache10()
         val csw = botHandler.executeCommand(cdb, null, directionIn = false)
         if (csw.status != CommandStatusWrapper.Status.COMMAND_PASSED) {
-            throw IOException("Falha no comando SCSI SYNCHRONIZE CACHE 10")
+            throw IOException("SCSI SYNCHRONIZE CACHE 10 command failed")
         }
     }
 
@@ -73,11 +74,11 @@ class UsbBlockDevice(
             if (csw.status == CommandStatusWrapper.Status.COMMAND_PASSED && buf.position() >= 3) {
                 val modeDataHeader = buf.array()
                 val deviceSpecificParam = modeDataHeader[2].toInt() and 0xFF
-                // Bit 7 (0x80) do Byte 2 indica Write Protect (WP)
+                // Bit 7 (0x80) of Byte 2 indicates Write Protect (WP) flag
                 return@withContext (deviceSpecificParam and 0x80) != 0
             }
         } catch (e: Exception) {
-            // Alguns pendrives baratos não implementam MODE SENSE; assume falso
+            // Some low-cost USB controllers do not implement MODE SENSE; assume false
         }
         return@withContext false
     }

@@ -17,23 +17,24 @@ data class FakeDetectionResult(
 )
 
 /**
- * Motor de detecção de pendrives falsos e memória adulterada (estilo H2testw e FakeFlashTest).
+ * Detection engine for counterfeit flash drives and tampered NAND flash controllers (H2testw / FakeFlashTest algorithm).
  *
- * Pendrives falsos (ex: vendidos como 2 TB, mas com chip real de 16 GB ou 32 GB)
- * possuem firmware manipulado onde o controlador faz wrap-around: gravações além
- * da capacidade real sobrescrevem silenciosamente os primeiros setores da memória física.
+ * Counterfeit flash drives (e.g. advertised as 2 TB, but with only 16 GB or 32 GB of real NAND)
+ * utilize hacked controller firmware where sector addressing wraps around: writes beyond real physical capacity
+ * silently overwrite earlier sectors, destroying file tables and existing data.
  */
 class FakeCapacityDetector {
 
     companion object {
-        private const val MAGIC_TOKEN = 0x55414456L // "UADV" em Little Endian
+        private const val MAGIC_TOKEN = 0x55414456L // "UADV" in Little Endian
     }
 
     /**
-     * Teste Rápido Inteligente (Smart Probe):
-     * Testa fronteiras logarítmicas de capacidade (1 GB, 2 GB, 4 GB, 8 GB, 16 GB, 32 GB, etc.).
-     * Em cada fronteira, escreve uma assinatura única e relê todas as anteriores.
-     * Se uma gravação em LBA alto sobrescrever uma assinatura anterior, a falsificação é comprovada.
+     * Smart Boundary Probe:
+     * Evaluates logarithmic power-of-2 capacity boundaries (512 MB, 1 GB, 2 GB, 4 GB, 8 GB, 16 GB, 32 GB, etc.).
+     * At each boundary, writes a unique signed cryptographic sector and immediately verifies all prior checkpoints.
+     * If writing to a higher LBA corrupts or overwrites an earlier checkpoint signature, a controller wrap-around
+     * is definitively detected in under 60 seconds without having to fill the entire drive.
      */
     suspend fun runQuickProbe(
         blockDevice: IBlockDevice,
@@ -44,15 +45,15 @@ class FakeCapacityDetector {
         val declaredCapacity = blockDevice.capacityBytes
         val sessionNonce = Random().nextLong()
 
-        // Lista de checkpoints estratégicos (em bytes): 512 MB, 1 GB, 2 GB, 4 GB, 8 GB, 16 GB, 32 GB, 64 GB, etc.
+        // List of strategic boundary checkpoints: 512 MB, 1 GB, 2 GB, 4 GB, 8 GB, 16 GB, 32 GB, 64 GB, etc.
         val checkpointsBytes = mutableListOf<Long>()
-        var currentBytes = 512L * 1024 * 1024 // Começa em 512 MB
+        var currentBytes = 512L * 1024 * 1024 // Start at 512 MB boundary
         while (currentBytes < declaredCapacity) {
             checkpointsBytes.add(currentBytes)
             currentBytes *= 2
         }
         if (checkpointsBytes.isEmpty() || checkpointsBytes.last() < declaredCapacity - (100L * 1024 * 1024)) {
-            checkpointsBytes.add(maxOf(0L, declaredCapacity - (16L * 1024 * 1024))) // Teste próximo ao final
+            checkpointsBytes.add(maxOf(0L, declaredCapacity - (16L * 1024 * 1024))) // Test near drive end
         }
 
         val checkpointsLba = checkpointsBytes.map { it / sectorSize }.filter { it < totalSectors }
@@ -64,14 +65,14 @@ class FakeCapacityDetector {
 
         onProgress(5.0f, "Iniciando varredura rápida de autenticidade...")
 
-        // Fase 1: Gravação e verificação progressiva de assinaturas
+        // Phase 1: Progressive writing and verification of boundary signatures
         for (i in checkpointsLba.indices) {
             val targetLba = checkpointsLba[i]
             val pct = 5.0f + (70.0f * (i.toFloat() / checkpointsLba.size))
             val currentGb = (targetLba * sectorSize) / (1024.0 * 1024.0 * 1024.0)
             onProgress(pct, String.format("Testando fronteira de %.1f GB (LBA %d)...", currentGb, targetLba))
 
-            // Monta o setor com a assinatura deste checkpoint
+            // Assemble checkpoint sector with unique cryptographic validation tuple
             buffer.clear()
             buffer.putLong(MAGIC_TOKEN)
             buffer.putLong(targetLba)
@@ -89,7 +90,7 @@ class FakeCapacityDetector {
                 break
             }
 
-            // Relê TODOS os checkpoints anteriores para verificar se foram sobrescritos
+            // Re-read ALL prior checkpoints to detect controller address wrap-around overwrites
             for (prevIdx in 0 until i) {
                 val prevLba = checkpointsLba[prevIdx]
                 buffer.clear()
@@ -102,7 +103,7 @@ class FakeCapacityDetector {
                     val checkVal = buffer.long
 
                     if (token != MAGIC_TOKEN || readLba != prevLba || readNonce != sessionNonce || checkVal != (prevLba xor sessionNonce)) {
-                        // Falsificação detectada! O chip deu a volta (wrap-around)
+                        // Tampered memory detected! Controller wrapped around and destroyed earlier sector
                         isFake = true
                         corruptedCount++
                         val realCap = (checkpointsLba[i] - prevLba) * sectorSize

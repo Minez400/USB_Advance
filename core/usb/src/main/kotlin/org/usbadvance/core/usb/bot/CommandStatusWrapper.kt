@@ -4,8 +4,8 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
- * Command Status Wrapper (CSW) segundo a especificação USB Mass Storage Class Bulk-Only Transport (BOT).
- * Possui tamanho estrito de 13 bytes.
+ * Command Status Wrapper (CSW) per USB Mass Storage Class Bulk-Only Transport (BOT) specification.
+ * Exactly 13 bytes in length.
  */
 data class CommandStatusWrapper(
     val tag: Int,
@@ -23,17 +23,17 @@ data class CommandStatusWrapper(
     }
 
     companion object {
-        const val CSW_SIGNATURE = 0x53425355 // "USBS" em ASCII Little Endian
+        const val CSW_SIGNATURE = 0x53425355 // "USBS" in ASCII Little Endian
         const val CSW_LENGTH = 13
 
         fun parse(data: ByteArray): CommandStatusWrapper {
-            require(data.size >= CSW_LENGTH) { "Tamanho insuficiente para CSW: ${data.size}" }
+            require(data.size >= CSW_LENGTH) { "Insufficient byte length for CSW: ${data.size}" }
             val buffer = ByteBuffer.wrap(data)
             buffer.order(ByteOrder.LITTLE_ENDIAN)
 
             val signature = buffer.int
             if (signature != CSW_SIGNATURE) {
-                throw IllegalStateException("Assinatura CSW inválida: 0x${Integer.toHexString(signature)} (esperado USBS)")
+                throw IllegalStateException("Invalid CSW signature: 0x${Integer.toHexString(signature)} (expected USBS)")
             }
 
             val tag = buffer.int

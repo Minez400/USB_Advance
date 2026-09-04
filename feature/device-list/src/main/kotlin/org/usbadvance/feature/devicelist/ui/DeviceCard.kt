@@ -52,7 +52,7 @@ fun DeviceCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Animação contínua de pulso para o LED de status
+    // Continuous pulse animation for connection status LED
     val infiniteTransition = rememberInfiniteTransition(label = "PulseLed")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 0.85f,
@@ -94,7 +94,7 @@ fun DeviceCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Ícone USB em container circular com gradiente
+                // USB Icon in gradient circular container
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -132,7 +132,7 @@ fun DeviceCard(
                     )
                 }
 
-                // LED indicador de status de conexão ativa
+                // Active connection status LED indicator
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -159,12 +159,12 @@ fun DeviceCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Barra de visualização gráfica do disco
+            // Graphical disk sector visualizer bar
             DiskVisualizerBar(device = device)
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Chips técnicos com metadados de baixo nível
+            // Low-level technical metadata chips
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

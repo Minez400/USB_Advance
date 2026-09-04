@@ -12,7 +12,7 @@ enum class StorageBusType {
 }
 
 /**
- * Representação de alto nível de uma unidade de armazenamento conectada ao sistema.
+ * High-level abstraction for an attached storage drive in the system.
  */
 interface IStorageDevice {
     val id: String
@@ -29,7 +29,7 @@ interface IStorageDevice {
     val isWriteProtected: Boolean
 
     /**
-     * Abre uma sessão de I/O em nível de setor com a unidade.
+     * Opens a low-level sector I/O session with the storage device.
      */
     suspend fun openBlockDevice(): IBlockDevice
 }
@@ -51,6 +51,6 @@ data class GenericStorageDevice(
 ) : IStorageDevice {
     override suspend fun openBlockDevice(): IBlockDevice {
         return blockDeviceProvider?.invoke()
-            ?: throw UnsupportedOperationException("Provedor de IBlockDevice não configurado para $name")
+            ?: throw UnsupportedOperationException("IBlockDevice provider not configured for $name")
     }
 }

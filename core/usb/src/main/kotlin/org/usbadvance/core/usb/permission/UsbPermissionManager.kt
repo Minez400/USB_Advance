@@ -12,7 +12,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 /**
- * Gerenciador de permissões USB assíncrono baseado em Kotlin Coroutines.
+ * Asynchronous USB permission manager based on Kotlin Coroutines and SuspendCancellableCoroutine.
  */
 class UsbPermissionManager(private val context: Context) {
 

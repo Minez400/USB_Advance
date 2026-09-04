@@ -14,7 +14,7 @@ class Ext4FilesystemProvider : FilesystemProvider {
     override val filesystemType: FilesystemType = FilesystemType.EXT4
     override val displayName: String = "ext4 (Linux / Android Avançado)"
     override val description: String = "Sistema de arquivos padrão do ecossistema Linux. Excelente integridade de dados e permissões POSIX nativas."
-    override val isRootRequired: Boolean = false // Gravado via USB Host BOT sem necessidade de root!
+    override val isRootRequired: Boolean = false // Written directly via userspace USB Host BOT without root requirement!
     override val supportedClusterSizes: List<Int> = listOf(1024, 2048, 4096)
     override val defaultClusterSize: Int = 4096
     override val maxVolumeLabelLength: Int = 16

@@ -5,7 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Utilitário de detecção de privilégios de superusuário (Root) via libsu.
+ * Superuser (Root) detection and shell privilege elevation utility via libsu.
  */
 object RootDetector {
 

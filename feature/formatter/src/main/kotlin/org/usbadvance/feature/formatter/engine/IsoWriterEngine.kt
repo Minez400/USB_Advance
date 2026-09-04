@@ -27,11 +27,18 @@ data class IsoBurnResult(
     val errorMessage: String? = null
 )
 
+/**
+ * Raw disk image writer engine (Rufus / Etcher style) for writing OS installation media (.iso, .img)
+ * directly to physical sectors of target USB storage devices over BOT/SCSI.
+ */
 class IsoWriterEngine {
 
     companion object {
+        /**
+         * Resolves display name and file size via ContentResolver and OpenableColumns / PFD statSize.
+         */
         fun queryFileInfo(contentResolver: ContentResolver, uri: Uri): Pair<String, Long> {
-            var displayName = "imagem.iso"
+            var displayName = "image.iso"
             var sizeBytes = 0L
 
             try {
@@ -61,6 +68,10 @@ class IsoWriterEngine {
         }
     }
 
+    /**
+     * Burns disk image from URI directly to block device sectors.
+     * Uses 64 KB aligned batches and flushes device cache upon completion.
+     */
     suspend fun burnImage(
         contentResolver: ContentResolver,
         imageUri: Uri,
@@ -73,7 +84,7 @@ class IsoWriterEngine {
 
         try {
             val sectorSize = blockDevice.sectorSize
-            // 64 KB por transação USB BOT para maximizar taxa de transferência
+            // 64 KB per USB BOT transaction to maximize bus throughput
             val sectorsPerChunk = maxOf(1, 65536 / sectorSize)
             val chunkSizeBytes = sectorsPerChunk * sectorSize
 
@@ -124,7 +135,7 @@ class IsoWriterEngine {
                     val bytesRead = inputStream.read(rawBuffer, 0, chunkSizeBytes)
                     if (bytesRead <= 0) break
 
-                    // Alinha para o setor seguinte caso seja o último bloco incompleto
+                    // Pad the trailing incomplete sector with zeros if necessary
                     val paddedBytes = ((bytesRead + sectorSize - 1) / sectorSize) * sectorSize
                     if (paddedBytes > bytesRead) {
                         java.util.Arrays.fill(rawBuffer, bytesRead, paddedBytes, 0.toByte())
@@ -177,7 +188,7 @@ class IsoWriterEngine {
                 errorMessage = "Não foi possível abrir o arquivo da imagem selecionada."
             )
 
-            // Sincroniza caches USB e descarrega para a flash
+            // Flush USB volatile caches to physical Flash NAND
             onProgress(
                 IsoBurnProgress(
                     progressPct = 99.5f,

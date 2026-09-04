@@ -32,9 +32,9 @@ import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Detector de hardware responsável por escanear o barramento USB OTG e notificar
- * conexões e desconexões de pendrives e discos externos.
- * Totalmente blindado contra SecurityException no Android 10+ e Android 14+.
+ * Hardware detector responsible for scanning the USB OTG bus and notifying
+ * connection and disconnection events of flash drives, external SSDs, and card readers.
+ * Hardened against SecurityException on Android 10+ (API 29+) and Android 14+ (API 34+).
  */
 class UsbHostDetector(private val context: Context) {
 
@@ -97,7 +97,7 @@ class UsbHostDetector(private val context: Context) {
         val usbDevice = usbManager.deviceList.values.firstOrNull { it.deviceName == device.id } ?: return false
         val granted = permissionManager.requestPermission(usbDevice)
         if (granted) {
-            geometryCache.remove(device.id) // Força re-leitura com permissão concedida
+            geometryCache.remove(device.id) // Force re-query with granted permissions
             refreshDevices()
         }
         return granted
@@ -138,7 +138,7 @@ class UsbHostDetector(private val context: Context) {
         for ((_, usbDevice) in deviceList) {
             val massStorageIntf = findMassStorageInterface(usbDevice) ?: continue
 
-            // Verifica permissão e obtém geometria real se disponível
+            // Verify permission and inspect real geometry if accessible
             val hasPermission = try {
                 usbManager.hasPermission(usbDevice)
             } catch (e: Exception) {
@@ -157,18 +157,18 @@ class UsbHostDetector(private val context: Context) {
                 DiskGeometry(512, 0L)
             }
 
-            // Proteção estrita contra SecurityException (Android 10+)
+            // Guard against SecurityException on Android 10+ (API 29+) when reading device identifiers
             val vendorName = try {
                 usbDevice.manufacturerName?.takeIf { it.isNotBlank() }
             } catch (e: SecurityException) {
                 null
-            } ?: "Dispositivo USB (0x%04X)".format(usbDevice.vendorId)
+            } ?: "USB Storage (0x%04X)".format(usbDevice.vendorId)
 
             val productName = try {
                 usbDevice.productName?.takeIf { it.isNotBlank() }
             } catch (e: SecurityException) {
                 null
-            } ?: "Armazenamento OTG (0x%04X)".format(usbDevice.productId)
+            } ?: "OTG Drive (0x%04X)".format(usbDevice.productId)
 
             val serial = try {
                 usbDevice.serialNumber?.takeIf { it.isNotBlank() }
@@ -176,7 +176,7 @@ class UsbHostDetector(private val context: Context) {
                 null
             } ?: "USB-${usbDevice.deviceId}"
 
-            // Cria o representador de alto nível
+            // Create high-level storage device abstraction
             val storageDevice = GenericStorageDevice(
                 id = usbDevice.deviceName,
                 name = "$vendorName $productName",
@@ -245,13 +245,13 @@ class UsbHostDetector(private val context: Context) {
 
     private fun openUsbBlockDevice(device: UsbDevice, usbInterface: UsbInterface): UsbBlockDevice {
         val connection = usbManager.openDevice(device)
-            ?: throw IllegalStateException("Não foi possível abrir conexão USB. Permissão concedida?")
+            ?: throw IllegalStateException("Could not open USB connection. Was permission granted?")
 
-        // REQUISITO CRÍTICO: force = true desanexa o driver usb-storage do kernel Linux
+        // CRITICAL: force = true detaches kernel driver (usb-storage) and gives userspace exclusive control
         val claimed = connection.claimInterface(usbInterface, true)
         if (!claimed) {
             connection.close()
-            throw IllegalStateException("Falha ao reivindicar interface USB (claimInterface)")
+            throw IllegalStateException("Failed to claim USB interface via claimInterface(force = true)")
         }
 
         var inEndpoint: UsbEndpoint? = null
@@ -271,19 +271,19 @@ class UsbHostDetector(private val context: Context) {
         if (inEndpoint == null || outEndpoint == null) {
             connection.releaseInterface(usbInterface)
             connection.close()
-            throw IllegalStateException("Endpoints Bulk IN/OUT não encontrados na interface USB.")
+            throw IllegalStateException("Bulk IN/OUT endpoints not found on target USB interface.")
         }
 
         val botHandler = BotProtocolHandler(connection, usbInterface, inEndpoint, outEndpoint)
 
-        // Executa comando SCSI READ CAPACITY 10 para descobrir tamanho real
+        // Execute SCSI READ CAPACITY 10 to determine true media sector count and sector size
         val capCdb = ScsiCommands.readCapacity10()
         val capBuf = ByteBuffer.allocate(8)
         val csw = botHandler.executeCommand(capCdb, capBuf, directionIn = true)
         if (csw.status != CommandStatusWrapper.Status.COMMAND_PASSED) {
             connection.releaseInterface(usbInterface)
             connection.close()
-            throw IllegalStateException("SCSI READ CAPACITY 10 falhou com status: ${csw.status}")
+            throw IllegalStateException("SCSI READ CAPACITY 10 failed with status: ${csw.status}")
         }
         val capInfo = ScsiCommands.parseReadCapacity10Response(capBuf.array())
 
@@ -299,7 +299,7 @@ class UsbHostDetector(private val context: Context) {
     private fun findMassStorageInterface(device: UsbDevice): UsbInterface? {
         for (i in 0 until device.interfaceCount) {
             val intf = device.getInterface(i)
-            // Classe 0x08 (Mass Storage), Subclasse 0x06 (SCSI), Protocolo 0x50 (Bulk-Only Transport)
+            // Class 0x08 (Mass Storage), Subclass 0x06 (SCSI transparent command set), Protocol 0x50 (Bulk-Only Transport)
             if (intf.interfaceClass == UsbConstants.USB_CLASS_MASS_STORAGE &&
                 intf.interfaceSubclass == 0x06 &&
                 intf.interfaceProtocol == 0x50

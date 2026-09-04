@@ -94,7 +94,7 @@ fun FakeDetectorScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Card do Dispositivo
+            // Target device card
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -121,7 +121,7 @@ fun FakeDetectorScreen(
                 }
             }
 
-            // Explicação Técnica
+            // Technical explanation card
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -146,7 +146,7 @@ fun FakeDetectorScreen(
                 }
             }
 
-            // Painel de Teste / Progresso
+            // Test progress panel
             if (isRunning) {
                 Box(
                     modifier = Modifier
@@ -172,7 +172,7 @@ fun FakeDetectorScreen(
                 }
             }
 
-            // Card de Resultado
+            // Probe results card
             result?.let { res ->
                 val cardBorderColor = if (res.isAuthentic) Color(0xFF00E676) else Color(0xFFFF3D57)
                 val cardBgColor = if (res.isAuthentic) Color(0xFF0E2E1D) else Color(0xFF38151D)
@@ -231,7 +231,7 @@ fun FakeDetectorScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Botões de Ação
+            // Action buttons
             if (!isRunning) {
                 Button(
                     onClick = {

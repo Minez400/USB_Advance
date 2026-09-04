@@ -6,7 +6,7 @@ import java.nio.ByteOrder
 import java.util.UUID
 
 /**
- * Estrutura de uma entrada de partição GPT (128 bytes).
+ * GPT partition table entry structure (128 bytes).
  */
 data class GptPartitionEntry(
     val typeGuid: UUID,
@@ -18,7 +18,7 @@ data class GptPartitionEntry(
 ) {
     fun toFilesystemType(): FilesystemType? {
         return when (typeGuid) {
-            BASIC_DATA_GUID -> FilesystemType.EXFAT // Pode ser exFAT, FAT32 ou NTFS
+            BASIC_DATA_GUID -> FilesystemType.EXFAT // Can represent exFAT, FAT32, or NTFS
             LINUX_DATA_GUID -> FilesystemType.EXT4
             else -> null
         }
@@ -34,7 +34,7 @@ data class GptPartitionEntry(
             buffer.putLong(endingLba)
             buffer.putLong(attributes)
 
-            // Grava o nome em UTF-16LE (máximo 36 caracteres = 72 bytes)
+            // Write partition label in UTF-16LE (maximum 36 characters = 72 bytes)
             val charArray = name.toCharArray()
             for (i in 0 until 36) {
                 if (i < charArray.size) {
@@ -49,10 +49,10 @@ data class GptPartitionEntry(
     }
 
     companion object {
-        // GUID para partição de dados básica (FAT, exFAT, NTFS): EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
+        // GUID for Basic Data Partition (FAT, exFAT, NTFS): EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
         val BASIC_DATA_GUID: UUID = UUID.fromString("ebd0a0a2-b9e5-4433-87c0-68b6b72699c7")
 
-        // GUID para partição nativa Linux (ext4): 0FC63DAF-8483-4772-8E79-3D69D8477DE4
+        // GUID for Linux Native Filesystem Partition (ext4): 0FC63DAF-8483-4772-8E79-3D69D8477DE4
         val LINUX_DATA_GUID: UUID = UUID.fromString("0fc63daf-8483-4772-8e79-3d69d8477de4")
 
         fun parseFrom(buffer: ByteBuffer): GptPartitionEntry? {
@@ -63,7 +63,7 @@ data class GptPartitionEntry(
                 val typeGuid = readUuid(buffer)
                 if (typeGuid == UUID(0L, 0L)) {
                     buffer.position(startPos + 128)
-                    return null // Entrada vazia
+                    return null // Empty partition entry slot
                 }
 
                 val uniqueGuid = readUuid(buffer)
@@ -91,7 +91,7 @@ data class GptPartitionEntry(
         }
 
         private fun writeUuid(buffer: ByteBuffer, uuid: UUID) {
-            // No GPT, os primeiros 3 campos do GUID são Little Endian (Mixed Endian)
+            // In UEFI GPT, the first three fields of the GUID are little-endian (mixed-endian UUID)
             val mostSig = uuid.mostSignificantBits
             val timeLow = (mostSig ushr 32).toInt()
             val timeMid = (mostSig ushr 16).toShort()

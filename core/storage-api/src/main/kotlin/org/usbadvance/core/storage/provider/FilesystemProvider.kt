@@ -9,9 +9,9 @@ import org.usbadvance.core.storage.model.FormatResult
 import org.usbadvance.core.storage.model.ValidationResult
 
 /**
- * Service Provider Interface (SPI) para desacoplar e plugar sistemas de arquivos.
- * Permite adicionar novos formatos (ex: FAT32, exFAT, ext4, F2FS, Btrfs)
- * sem modificar a interface de usuário ou os controladores de barramento USB.
+ * Service Provider Interface (SPI) for decoupled filesystem formatters.
+ * Allows plugging new filesystem implementations (e.g., FAT32, exFAT, ext4, F2FS, Btrfs)
+ * without modifying user interface layers or USB bus controllers.
  */
 interface FilesystemProvider {
     val id: String
@@ -19,18 +19,18 @@ interface FilesystemProvider {
     val displayName: String
     val description: String
     val isRootRequired: Boolean
-    val supportedClusterSizes: List<Int> // Lista de tamanhos de cluster em bytes (ex: 4096, 8192, 16384, 32768, 65536)
+    val supportedClusterSizes: List<Int> // Cluster sizes in bytes (e.g., 4096, 8192, 16384, 32768, 65536)
     val defaultClusterSize: Int
     val maxVolumeLabelLength: Int
     val supportsVolumeLabel: Boolean
 
     /**
-     * Valida se os parâmetros fornecidos são adequados para este sistema de arquivos e tamanho de disco.
+     * Validates whether the supplied options are valid for this filesystem and storage size.
      */
     fun validateOptions(options: FormatOptions, diskCapacityBytes: Long): ValidationResult
 
     /**
-     * Executa a formatação física e lógica da partição ou unidade especificada.
+     * Performs physical and logical format of the target partition or block device.
      */
     suspend fun format(
         blockDevice: IBlockDevice,
@@ -41,7 +41,7 @@ interface FilesystemProvider {
 }
 
 /**
- * Registro central de provedores de sistema de arquivos disponíveis na aplicação.
+ * Global registry of available filesystem formatters in the application.
  */
 object FilesystemRegistry {
     private val providers = mutableMapOf<FilesystemType, FilesystemProvider>()

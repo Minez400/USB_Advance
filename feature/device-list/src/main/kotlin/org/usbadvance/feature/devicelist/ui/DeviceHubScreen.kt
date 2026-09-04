@@ -100,7 +100,7 @@ fun DeviceHubScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Hero Card: Resumo do Dispositivo
+            // Hero Card: Device overview and summary
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -152,7 +152,7 @@ fun DeviceHubScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // Botão de Ejeção Segura
+                    // Safe drive ejection action
                     OutlinedButton(
                         onClick = { showEjectConfirm = true },
                         enabled = !isEjecting,
@@ -173,7 +173,7 @@ fun DeviceHubScreen(
                 }
             }
 
-            // Título de Ações
+            // Available Operations section header
             Text(
                 text = "OPERAÇÕES DISPONÍVEIS",
                 fontSize = 11.sp,
@@ -183,7 +183,7 @@ fun DeviceHubScreen(
                 modifier = Modifier.padding(start = 4.dp, top = 2.dp)
             )
 
-            // Opção 1: Formatar Unidade
+            // Operation 1: Low-level drive format
             OperationActionCard(
                 icon = Icons.Default.Storage,
                 title = "Formatar Unidade",
@@ -192,7 +192,7 @@ fun DeviceHubScreen(
                 onClick = onNavigateToFormat
             )
 
-            // Opção 2: Gravar Imagem ISO / IMG
+            // Operation 2: Flash ISO/IMG image
             OperationActionCard(
                 icon = Icons.Default.FlashOn,
                 title = "Gravar Imagem ISO / IMG",
@@ -201,7 +201,7 @@ fun DeviceHubScreen(
                 onClick = onNavigateToIsoBurner
             )
 
-            // Opção 3: Detector de Pendrive Falso
+            // Operation 3: Fake capacity detector
             OperationActionCard(
                 icon = Icons.Default.Shield,
                 title = "Detector de Pendrive Falso",
@@ -210,7 +210,7 @@ fun DeviceHubScreen(
                 onClick = onNavigateToFakeDetector
             )
 
-            // Opção 4: Benchmark de Velocidade
+            // Operation 4: Speed benchmark
             OperationActionCard(
                 icon = Icons.Default.Speed,
                 title = "Benchmark de Velocidade",
@@ -223,7 +223,7 @@ fun DeviceHubScreen(
         }
     }
 
-    // Diálogo de Confirmação de Ejeção
+    // Safe ejection confirmation dialog
     if (showEjectConfirm) {
         AlertDialog(
             onDismissRequest = { showEjectConfirm = false },

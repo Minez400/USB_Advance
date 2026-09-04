@@ -13,9 +13,9 @@ import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 
 /**
- * Foreground Service para garantir que o Android não termine o processo de I/O
- * durante a formatação física ou limpeza de setores do disco.
- * Em conformidade estrita com os requisitos de Foreground Service do Android 14 (API 34).
+ * Foreground Service ensuring Android does not terminate low-level I/O processes
+ * during physical formatting or sector wiping operations.
+ * Strictly compliant with Android 14 (API 34) Foreground Service type policies.
  */
 class FormatForegroundService : Service() {
 
@@ -41,7 +41,7 @@ class FormatForegroundService : Service() {
                     context.startService(intent)
                 }
             } catch (e: Exception) {
-                // Previne crash por ForegroundServiceStartNotAllowedException
+                // Prevents crash from ForegroundServiceStartNotAllowedException
             }
         }
 
@@ -71,7 +71,7 @@ class FormatForegroundService : Service() {
                 startForeground(NOTIFICATION_ID, initialNotification)
             }
         } catch (e: Exception) {
-            // Em caso de restrição do sistema
+            // Guard against system restriction exceptions
         }
 
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -79,7 +79,7 @@ class FormatForegroundService : Service() {
             PowerManager.PARTIAL_WAKE_LOCK,
             "UsbAdvance::FormatWakeLock"
         ).apply {
-            acquire(120 * 60 * 1000L) // Máximo 2 horas
+            acquire(120 * 60 * 1000L) // 2-hour safety ceiling
         }
     }
 

@@ -4,56 +4,56 @@ import java.io.Closeable
 import java.nio.ByteBuffer
 
 /**
- * Abstração de baixo nível para um dispositivo de bloco de armazenamento direto (setores LBA).
- * Pode ser implementada tanto via USB Mass Storage (SCSI sobre BOT em userspace)
- * quanto via nós /dev/block/sdX em dispositivos com root.
+ * Low-level abstraction for a direct block storage device addressed via LBA (Logical Block Addressing).
+ * Can be implemented over userspace USB Mass Storage (SCSI over Bulk-Only Transport) or
+ * kernel block device nodes (/dev/block/sdX) when running with root privileges.
  */
 interface IBlockDevice : Closeable {
     /**
-     * Tamanho em bytes de cada setor físico/lógico (geralmente 512 ou 4096).
+     * Size in bytes of each physical or logical sector (typically 512 or 4096 bytes).
      */
     val sectorSize: Int
 
     /**
-     * Quantidade total de blocos lógicos endereçáveis (LBAs).
+     * Total count of logical block addresses (LBAs) available on the storage medium.
      */
     val totalSectors: Long
 
     /**
-     * Capacidade total em bytes (totalSectors * sectorSize).
+     * Total physical media capacity in bytes (totalSectors * sectorSize).
      */
     val capacityBytes: Long get() = totalSectors * sectorSize
 
     /**
-     * Lê [count] setores a partir do endereço [lba] e grava no buffer de destino [destination].
-     * O buffer de destino deve possuir capacidade de ao menos count * sectorSize.
+     * Reads [count] sectors starting from address [lba] into destination buffer [destination].
+     * The destination buffer must have at least count * sectorSize remaining capacity.
      */
     suspend fun readSectors(lba: Long, count: Int, destination: ByteBuffer)
 
     /**
-     * Grava [count] setores a partir do endereço [lba] consumindo dados de [source].
-     * O buffer de origem deve possuir ao menos count * sectorSize bytes restantes.
+     * Writes [count] sectors starting from address [lba] consuming data from [source].
+     * The source buffer must have at least count * sectorSize remaining bytes.
      */
     suspend fun writeSectors(lba: Long, count: Int, source: ByteBuffer)
 
     /**
-     * Zera ou descarta (TRIM / SCSI UNMAP) uma faixa contígua de setores.
+     * Clears or discards (TRIM / SCSI UNMAP) a contiguous range of sectors.
      */
     suspend fun eraseSectors(lba: Long, count: Int)
 
     /**
-     * Envia comando de descarga de cache volátil (SCSI SYNCHRONIZE CACHE / flush de kernel).
-     * Garante que todas as escritas anteriores foram persistidas na memória Flash NAND física.
+     * Flushes volatile drive caches (SCSI SYNCHRONIZE CACHE or kernel flush).
+     * Ensures all previous write operations are physically committed to non-volatile Flash NAND.
      */
     suspend fun sync()
 
     /**
-     * Verifica se o dispositivo possui chave física ou flag de proteção contra gravação (Write-Protect).
+     * Checks if the device has a physical switch or flag indicating write-protection.
      */
     suspend fun isWriteProtected(): Boolean
 
     /**
-     * Descarrega caches e estaciona o dispositivo para ejeção segura.
+     * Flushes caches and spins down / prepares the storage unit for safe removal.
      */
     suspend fun eject(): Boolean = false
 }

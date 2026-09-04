@@ -70,7 +70,7 @@ fun FormatProgressScreen(
         ) {
             when (val step = state.step) {
                 is FormatterStep.Executing -> {
-                    // Título e Aviso
+                    // Header and Warning Banner
                     Text(
                         text = "Formatando Armazenamento",
                         fontSize = 22.sp,
@@ -102,12 +102,12 @@ fun FormatProgressScreen(
 
                     Spacer(modifier = Modifier.height(36.dp))
 
-                    // Tacômetro Circular Digital
+                    // Digital Circular Tachometer
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.size(190.dp)
                     ) {
-                        // Halo de fundo
+                        // Background radial glow halo
                         Box(
                             modifier = Modifier
                                 .size(170.dp)
@@ -119,7 +119,7 @@ fun FormatProgressScreen(
                                 )
                         )
 
-                        // Trilha estática de fundo
+                        // Static background track
                         CircularProgressIndicator(
                             progress = { 1f },
                             modifier = Modifier.size(160.dp),
@@ -128,7 +128,7 @@ fun FormatProgressScreen(
                             trackColor = Color.Transparent
                         )
 
-                        // Indicador de Progresso com cor Neon Cyan
+                        // Progress indicator with Cyber Cyan stroke
                         CircularProgressIndicator(
                             progress = { animatedProgress },
                             modifier = Modifier.size(160.dp),
@@ -156,7 +156,7 @@ fun FormatProgressScreen(
 
                     Spacer(modifier = Modifier.height(28.dp))
 
-                    // Descrição da Etapa Atual
+                    // Current Stage Description
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(14.dp))
@@ -173,7 +173,7 @@ fun FormatProgressScreen(
                         )
                     }
 
-                    // Card de Velocidade em Tempo Real (MB/s)
+                    // Live Real-Time Speed Tachometer (MB/s)
                     if (state.progress.currentSpeedBytesPerSec > 0) {
                         Spacer(modifier = Modifier.height(16.dp))
                         val speedMb = state.progress.currentSpeedBytesPerSec / (1024.0 * 1024.0)
@@ -238,7 +238,7 @@ fun FormatProgressScreen(
 
                             Spacer(modifier = Modifier.height(24.dp))
 
-                            // Resumo Técnico da Operação
+                            // Operation Technical Summary
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()

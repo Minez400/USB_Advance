@@ -5,7 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Controlador de comunicação com o Volume Daemon (vold) do Android para desmontagem segura.
+ * Android Volume Daemon (vold) communication controller for safe block device unmounting.
  */
 class VoldController {
 
@@ -13,7 +13,7 @@ class VoldController {
         val result = Shell.cmd("sm unmount $volumeId").exec()
         if (result.isSuccess) return@withContext true
 
-        // Fallback para vdc
+        // Fallback to direct vdc daemon command
         val vdcResult = Shell.cmd("vdc volume unmount $volumeId").exec()
         return@withContext vdcResult.isSuccess
     }

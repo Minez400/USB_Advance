@@ -96,7 +96,7 @@ fun DiagnosticScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Card do Dispositivo
+            // Target device card
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -123,7 +123,7 @@ fun DiagnosticScreen(
                 }
             }
 
-            // Card de Benchmark
+            // Benchmark metrics card
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

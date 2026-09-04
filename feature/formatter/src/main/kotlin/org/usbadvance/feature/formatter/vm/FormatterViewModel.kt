@@ -50,7 +50,7 @@ class FormatterViewModel(
     val uiState: StateFlow<FormatterUiState> = _uiState.asStateFlow()
 
     init {
-        // Registra provedores SPI se ainda não registrados
+        // Register filesystem SPI providers if not already registered
         if (!FilesystemRegistry.isSupported(FilesystemType.FAT32)) {
             FilesystemRegistry.register(Fat32FilesystemProvider())
             FilesystemRegistry.register(ExFatFilesystemProvider())
@@ -72,7 +72,7 @@ class FormatterViewModel(
         val current = _uiState.value.options
         val updated = current.copy(
             filesystemType = fs,
-            clusterSizeBytes = 0 // Automático
+            clusterSizeBytes = 0 // 0 = Automatic cluster size selection
         )
         _uiState.value = _uiState.value.copy(options = updated)
         validate()
@@ -143,7 +143,7 @@ class FormatterViewModel(
         try {
             val blockDevice = device.openBlockDevice()
 
-            // 1. Checagem de trava física de gravação
+            // 1. Hardware write-protect verification
             if (blockDevice.isWriteProtected()) {
                 blockDevice.close()
                 return@withContext FormatResult.Failure(
@@ -153,7 +153,7 @@ class FormatterViewModel(
                 )
             }
 
-            // 2. Particionamento (MBR ou GPT)
+            // 2. Partition table writing (MBR or GPT)
             _uiState.value = _uiState.value.copy(
                 progress = FormatProgress(
                     stage = FormatStage.CREATING_PARTITION_TABLE,
@@ -169,7 +169,7 @@ class FormatterViewModel(
                 volumeLabel = options.volumeLabel
             )
 
-            // 3. Formatação lógica do sistema de arquivos
+            // 3. Logical filesystem formatting
             val provider = FilesystemRegistry.get(options.filesystemType)
                 ?: return@withContext FormatResult.Failure(
                     errorCode = ErrorCode.INTERNAL_NATIVE_ERROR,

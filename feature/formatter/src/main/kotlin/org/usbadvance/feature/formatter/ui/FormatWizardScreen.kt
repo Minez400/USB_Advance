@@ -147,7 +147,7 @@ fun FormatWizardScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Card de Resumo do Dispositivo
+            // Target device summary card
             state.device?.let { dev ->
                 Box(
                     modifier = Modifier
@@ -191,7 +191,7 @@ fun FormatWizardScreen(
                 }
             }
 
-            // Seleção de Sistema de Arquivos (Cards Ricos)
+            // Filesystem selection cards
             Text(
                 text = "Escolha o Sistema de Arquivos",
                 fontSize = 14.sp,
@@ -241,7 +241,7 @@ fun FormatWizardScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Nome do Volume (Label)
+            // Volume label (Name)
             Text(
                 text = "Rótulo do Volume (Label)",
                 fontSize = 14.sp,
@@ -270,7 +270,7 @@ fun FormatWizardScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Tabela de Partições (MBR vs GPT)
+            // Partition scheme selection (MBR vs GPT)
             Text(
                 text = "Esquema de Partição",
                 fontSize = 14.sp,
@@ -297,7 +297,7 @@ fun FormatWizardScreen(
                 )
             }
 
-            // Modo de Gravação (Rápida vs Limpeza Completa)
+            // Formatting mode (Quick vs Full Zero Wipe)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -341,7 +341,7 @@ fun FormatWizardScreen(
                 }
             }
 
-            // Avisos e Validações
+            // Real-time validation errors and warnings
             if (!state.validationResult.isValid) {
                 state.validationResult.errors.forEach { err ->
                     Text(text = "❌ $err", color = Color(0xFFFF3D57), fontSize = 12.sp)

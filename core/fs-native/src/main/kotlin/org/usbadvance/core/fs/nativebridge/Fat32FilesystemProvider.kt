@@ -27,7 +27,7 @@ class Fat32FilesystemProvider : FilesystemProvider {
         if (options.volumeLabel.length > maxVolumeLabelLength) {
             errors.add("O rótulo do volume no FAT32 não pode ultrapassar $maxVolumeLabelLength caracteres.")
         }
-        if (diskCapacityBytes < 65525L * 512L) { // ~33 MB mínimo
+        if (diskCapacityBytes < 65525L * 512L) { // ~33 MB minimum
             errors.add("O tamanho da partição é muito pequeno para o sistema FAT32.")
         }
         if (diskCapacityBytes > 2L * 1024 * 1024 * 1024 * 1024) {

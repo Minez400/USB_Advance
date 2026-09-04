@@ -4,7 +4,7 @@ import org.usbadvance.core.storage.model.FilesystemType
 import org.usbadvance.core.storage.model.PartitionTableType
 
 /**
- * Representação abstrata de uma partição existente ou a ser criada em uma unidade.
+ * Abstract representation of a partition either existing on or targeted for a storage unit.
  */
 interface IPartition {
     val index: Int

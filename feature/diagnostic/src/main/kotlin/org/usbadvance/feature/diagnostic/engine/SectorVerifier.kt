@@ -11,6 +11,10 @@ data class VerificationResult(
     val isHealthy: Boolean = (badSectorsCount == 0L)
 )
 
+/**
+ * Non-destructive sector verifier.
+ * Performs sequential read checks over physical storage sectors without altering existing data.
+ */
 class SectorVerifier {
 
     suspend fun verifySectors(
@@ -36,7 +40,7 @@ class SectorVerifier {
             }
             scanned += count
             val pct = (scanned.toFloat() / totalToScan) * 100.0f
-            onProgress(pct, "Verificando LBA $scanned de $totalToScan...")
+            onProgress(pct, "Verifying LBA $scanned of $totalToScan...")
         }
 
         VerificationResult(

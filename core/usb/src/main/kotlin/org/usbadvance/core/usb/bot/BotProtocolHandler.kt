@@ -8,7 +8,8 @@ import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Manipulador da máquina de estados do protocolo USB Mass Storage Bulk-Only Transport (BOT).
+ * State machine handler for the USB Mass Storage Class Bulk-Only Transport (BOT) protocol.
+ * Manages atomic CBW (Command Block Wrapper) dispatch, payload transfers, and CSW validation.
  */
 class BotProtocolHandler(
     private val connection: UsbDeviceConnection,
@@ -17,13 +18,13 @@ class BotProtocolHandler(
     private val outEndpoint: UsbEndpoint
 ) {
     private val tagGenerator = AtomicInteger(1)
-    private val defaultTimeoutMs = 10000 // 10 segundos
+    private val defaultTimeoutMs = 10000 // 10-second standard timeout
 
     /**
-     * Executa uma transação SCSI completa sobre BOT:
-     * 1. Fase de Comando: Envia o CBW (31 bytes) pelo endpoint Bulk OUT.
-     * 2. Fase de Dados (opcional): Transfere dados de/para o dispositivo.
-     * 3. Fase de Status: Recebe o CSW (13 bytes) pelo endpoint Bulk IN e valida o resultado.
+     * Executes a full SCSI transaction over Bulk-Only Transport:
+     * 1. Command Phase: Sends the 31-byte CBW via the Bulk OUT endpoint.
+     * 2. Data Phase (optional): Transmits payload data to/from the device.
+     * 3. Status Phase: Receives the 13-byte CSW via the Bulk IN endpoint and verifies execution status.
      */
     @Synchronized
     fun executeCommand(
@@ -41,20 +42,20 @@ class BotProtocolHandler(
             cdb = cdb
         )
 
-        // 1. Envia CBW
+        // 1. Send Command Block Wrapper (CBW)
         val cbwBytes = cbw.serialize()
         val cbwSent = connection.bulkTransfer(outEndpoint, cbwBytes, cbwBytes.size, defaultTimeoutMs)
         if (cbwSent != CommandBlockWrapper.CBW_LENGTH) {
-            throw IOException("Falha ao enviar Command Block Wrapper (CBW). Bytes enviados: $cbwSent")
+            throw IOException("Failed to dispatch Command Block Wrapper (CBW). Bytes sent: $cbwSent")
         }
 
-        // 2. Transfere dados (se houver) em blocos seguros de até 16 KB (16384 bytes)
+        // 2. Transfer payload in safe chunks up to 16 KB (usbfs buffer limit on Android kernel)
         if (dataBuffer != null && transferLength > 0) {
-            val maxChunkSize = 16384 // Limite máximo seguro do kernel usbfs no Android
+            val maxChunkSize = 16384 // Safe chunk threshold for Linux usbfs on Android
             val transferArray = ByteArray(transferLength)
 
             if (!directionIn) {
-                // Host to Device (Data OUT)
+                // Host-to-Device (Data OUT)
                 val currentPos = dataBuffer.position()
                 dataBuffer.get(transferArray)
                 dataBuffer.position(currentPos)
@@ -64,18 +65,18 @@ class BotProtocolHandler(
                     val chunk = minOf(transferLength - offset, maxChunkSize)
                     val sent = connection.bulkTransfer(outEndpoint, transferArray, offset, chunk, defaultTimeoutMs)
                     if (sent <= 0) {
-                        throw IOException("Erro durante envio de dados SCSI no endpoint Bulk OUT: $sent")
+                        throw IOException("Error transmitting SCSI data payload on Bulk OUT endpoint: $sent")
                     }
                     offset += sent
                 }
             } else {
-                // Device to Host (Data IN)
+                // Device-to-Host (Data IN)
                 var offset = 0
                 while (offset < transferLength) {
                     val chunk = minOf(transferLength - offset, maxChunkSize)
                     val received = connection.bulkTransfer(inEndpoint, transferArray, offset, chunk, defaultTimeoutMs)
                     if (received <= 0) {
-                        throw IOException("Erro durante recepção de dados SCSI no endpoint Bulk IN: $received")
+                        throw IOException("Error receiving SCSI data payload on Bulk IN endpoint: $received")
                     }
                     offset += received
                 }
@@ -83,28 +84,28 @@ class BotProtocolHandler(
             }
         }
 
-        // 3. Recebe CSW
+        // 3. Receive Command Status Wrapper (CSW)
         val cswBuffer = ByteArray(CommandStatusWrapper.CSW_LENGTH)
         val cswReceived = connection.bulkTransfer(inEndpoint, cswBuffer, cswBuffer.size, defaultTimeoutMs)
         if (cswReceived != CommandStatusWrapper.CSW_LENGTH) {
-            throw IOException("Falha ao receber Command Status Wrapper (CSW). Bytes lidos: $cswReceived")
+            throw IOException("Failed to receive Command Status Wrapper (CSW). Bytes received: $cswReceived")
         }
 
         val csw = CommandStatusWrapper.parse(cswBuffer)
         if (csw.tag != tag) {
-            throw IOException("Tag de transação inconsistente no CSW. Esperado: $tag, Recebido: ${csw.tag}")
+            throw IOException("Transaction tag mismatch in CSW. Expected: $tag, Received: ${csw.tag}")
         }
 
         return csw
     }
 
     /**
-     * Executa a recuperação de erro Reset Recovery padrão USB Mass Storage BOT.
+     * Executes standard Bulk-Only Mass Storage Reset Recovery sequence.
      */
     fun resetRecovery() {
-        // Envia comando de controle Bulk-Only Mass Storage Reset (Classe de controle 0x21, Request 0xFF)
+        // Sends class-specific control request: Bulk-Only Mass Storage Reset (bRequestType=0x21, bRequest=0xFF)
         connection.controlTransfer(0x21, 0xFF, 0, usbInterface.id, null, 0, defaultTimeoutMs)
-        // Limpa a condição de parada (HALT) nos endpoints
+        // Clear HALT / STALL condition on bulk endpoints if needed
         // connection.clearHalt(inEndpoint); connection.clearHalt(outEndpoint);
     }
 }

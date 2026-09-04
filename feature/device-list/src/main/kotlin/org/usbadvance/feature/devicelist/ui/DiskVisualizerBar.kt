@@ -41,7 +41,7 @@ fun DiskVisualizerBar(
     val isReady = device.geometry.capacityBytes > 0
 
     Column(modifier = modifier.fillMaxWidth()) {
-        // Barra Gráfica de Setores
+        // Graphical Sector Allocation Bar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -52,7 +52,7 @@ fun DiskVisualizerBar(
         ) {
             if (isReady) {
                 Row(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
-                    // Segmento 1: LBA 0 (Tabela de Partições) - 4%
+                    // Segment 1: LBA 0 (Partition Table Header) - ~4%
                     Box(
                         modifier = Modifier
                             .weight(0.04f)
@@ -60,7 +60,7 @@ fun DiskVisualizerBar(
                             .background(Color(0xFFFFB300))
                     )
 
-                    // Segmento 2: Margem Flash 1 MiB (LBA 1 a 2047) - 3%
+                    // Segment 2: 1 MiB Flash Alignment Reserve (LBAs 1 to 2047) - ~3%
                     Box(
                         modifier = Modifier
                             .weight(0.03f)
@@ -68,7 +68,7 @@ fun DiskVisualizerBar(
                             .background(Color(0xFF334155))
                     )
 
-                    // Segmento 3: Partição Principal de Dados - 93%
+                    // Segment 3: Primary Data Partition - ~93%
                     Box(
                         modifier = Modifier
                             .weight(0.93f)
@@ -81,7 +81,7 @@ fun DiskVisualizerBar(
                     )
                 }
             } else {
-                // Estado desconectado ou permissão pendente
+                // Disconnected or permission pending state
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -93,7 +93,7 @@ fun DiskVisualizerBar(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Legenda técnica de alinhamento e dados
+        // Technical alignment and payload legend
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

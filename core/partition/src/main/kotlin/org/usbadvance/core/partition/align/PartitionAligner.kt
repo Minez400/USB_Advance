@@ -1,27 +1,27 @@
 package org.usbadvance.core.partition.align
 
 /**
- * Calculador de alinhamento de partição otimizado para memórias Flash NAND (pendrives e SSDs).
+ * Partition alignment calculator optimized for NAND Flash memories (USB drives and SSDs).
  *
- * Dispositivos Flash possuem blocos de apagamento (erase blocks) de 1 MiB a 4 MiB.
- * Iniciar uma partição desalinhada causa penalidade de escrita e amplificação de desgaste.
- * Este alinhador garante que toda partição inicie em um múltiplo exato de 1 MiB (LBA 2048 para setores de 512B).
+ * Flash devices organize storage in physical erase blocks ranging from 1 MiB to 4 MiB.
+ * Starting a partition unaligned causes read-modify-write performance penalties and flash wear amplification.
+ * This aligner guarantees every partition starts on an exact 1 MiB boundary (LBA 2048 for 512-byte sectors).
  */
 object PartitionAligner {
-    const val DEFAULT_ALIGNMENT_BYTES: Long = 1024 * 1024 // 1 MiB (1.048.576 bytes)
+    const val DEFAULT_ALIGNMENT_BYTES: Long = 1024 * 1024 // 1 MiB (1,048,576 bytes)
 
     /**
-     * Calcula o primeiro LBA alinhado a 1 MiB para o setor informado.
-     * Para setores de 512 bytes: 1048576 / 512 = 2048 setores.
-     * Para setores de 4096 bytes: 1048576 / 4096 = 256 setores.
+     * Calculates the first 1 MiB aligned LBA for the given sector size.
+     * For 512-byte sectors: 1048576 / 512 = 2048 sectors.
+     * For 4096-byte (4Kn) sectors: 1048576 / 4096 = 256 sectors.
      */
     fun getFirstAlignedLba(sectorSize: Int): Long {
-        require(sectorSize > 0) { "Tamanho do setor inválido: $sectorSize" }
+        require(sectorSize > 0) { "Invalid sector size: $sectorSize" }
         return DEFAULT_ALIGNMENT_BYTES / sectorSize
     }
 
     /**
-     * Alinha um LBA arbitrário para cima ao múltiplo de 1 MiB mais próximo.
+     * Aligns an arbitrary LBA upward to the nearest 1 MiB boundary.
      */
     fun alignUp(lba: Long, sectorSize: Int): Long {
         val sectorsPerMib = DEFAULT_ALIGNMENT_BYTES / sectorSize
@@ -30,7 +30,7 @@ object PartitionAligner {
     }
 
     /**
-     * Alinha um LBA arbitrário para baixo ao múltiplo de 1 MiB mais próximo.
+     * Aligns an arbitrary LBA downward to the nearest 1 MiB boundary.
      */
     fun alignDown(lba: Long, sectorSize: Int): Long {
         val sectorsPerMib = DEFAULT_ALIGNMENT_BYTES / sectorSize

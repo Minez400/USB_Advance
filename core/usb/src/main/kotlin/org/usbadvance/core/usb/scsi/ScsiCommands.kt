@@ -4,7 +4,8 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
- * Construtor e decodificador dos blocos de comando SCSI (SBC-3 e SPC-4).
+ * Builder and parser for SCSI Command Descriptor Blocks (CDBs)
+ * conforming to SCSI Block Commands (SBC-3) and SCSI Primary Commands (SPC-4).
  */
 object ScsiCommands {
 
@@ -80,7 +81,7 @@ object ScsiCommands {
 
     fun startStopUnit(start: Boolean = false, loadEject: Boolean = true): ByteArray {
         val cdb = ByteArray(6)
-        cdb[0] = 0x1B.toByte() // Opcode START STOP UNIT
+        cdb[0] = 0x1B.toByte() // Opcode: START STOP UNIT
         var param = 0
         if (loadEject) param = param or 0x02
         if (start) param = param or 0x01
@@ -88,7 +89,7 @@ object ScsiCommands {
         return cdb
     }
 
-    // Decodificadores de Resposta SCSI
+    // SCSI Response Parsers
 
     data class InquiryInfo(
         val vendor: String,
@@ -97,7 +98,7 @@ object ScsiCommands {
     )
 
     fun parseInquiryResponse(data: ByteArray): InquiryInfo {
-        if (data.size < 36) return InquiryInfo("Desconhecido", "Dispositivo USB", "")
+        if (data.size < 36) return InquiryInfo("Unknown", "USB Drive", "")
         val vendor = String(data, 8, 8, Charsets.US_ASCII).trim()
         val product = String(data, 16, 16, Charsets.US_ASCII).trim()
         val revision = String(data, 32, 4, Charsets.US_ASCII).trim()
@@ -110,9 +111,9 @@ object ScsiCommands {
     )
 
     fun parseReadCapacity10Response(data: ByteArray): CapacityInfo {
-        require(data.size >= 8) { "Dados insuficientes para ReadCapacity10" }
+        require(data.size >= 8) { "Insufficient payload length for ReadCapacity10" }
         val buffer = ByteBuffer.wrap(data)
-        buffer.order(ByteOrder.BIG_ENDIAN) // SCSI sempre usa Big Endian nos dados!
+        buffer.order(ByteOrder.BIG_ENDIAN) // SCSI payloads always use Network / Big-Endian byte order
 
         val lastLba = buffer.int.toLong() and 0xFFFFFFFFL
         val sectorSize = buffer.int

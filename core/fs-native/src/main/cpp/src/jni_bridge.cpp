@@ -49,7 +49,7 @@ Java_org_usbadvance_core_fs_nativebridge_NativeFormatBridge_nativeFormat(
     jmethodID progress_mid = env->GetMethodID(callback_class, "onProgress", "(FLjava/lang/String;)V");
 
     if (!write_mid || !progress_mid) {
-        LOGE("Falha ao localizar métodos de callback JNI.");
+        LOGE("Failed to locate JNI callback methods.");
         return JNI_FALSE;
     }
 
@@ -100,7 +100,7 @@ Java_org_usbadvance_core_fs_nativebridge_NativeFormatBridge_nativeFormat(
             success = Ext4Formatter::format(params, write_fn, progress_fn);
             break;
         default:
-            LOGE("Tipo de sistema de arquivos desconhecido: %d", fs_type_ordinal);
+            LOGE("Unknown filesystem type: %d", fs_type_ordinal);
             return JNI_FALSE;
     }
 
