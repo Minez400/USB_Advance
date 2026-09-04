@@ -34,7 +34,7 @@ class RootBlockDevice(
         suRaf = SuRandomAccessFile.open(file, "rws")
     }
 
-    override suspend fun readSectors(lba: Long, count: Int, destination: ByteBuffer) = withContext(Dispatchers.IO) {
+    override suspend fun readSectors(lba: Long, count: Int, destination: ByteBuffer): Unit = withContext(Dispatchers.IO) {
         val raf = suRaf ?: throw IOException("Dispositivo fechado")
         val offset = lba * sectorSize
         raf.seek(offset)
@@ -45,9 +45,10 @@ class RootBlockDevice(
             throw IOException("Falha de leitura no bloco root: lidos $read de ${tempArray.size} bytes")
         }
         destination.put(tempArray)
+        Unit
     }
 
-    override suspend fun writeSectors(lba: Long, count: Int, source: ByteBuffer) = withContext(Dispatchers.IO) {
+    override suspend fun writeSectors(lba: Long, count: Int, source: ByteBuffer): Unit = withContext(Dispatchers.IO) {
         val raf = suRaf ?: throw IOException("Dispositivo fechado")
         val offset = lba * sectorSize
         raf.seek(offset)
@@ -57,7 +58,7 @@ class RootBlockDevice(
         raf.write(tempArray)
     }
 
-    override suspend fun eraseSectors(lba: Long, count: Int) = withContext(Dispatchers.IO) {
+    override suspend fun eraseSectors(lba: Long, count: Int): Unit = withContext(Dispatchers.IO) {
         val raf = suRaf ?: throw IOException("Dispositivo fechado")
         val offset = lba * sectorSize
         raf.seek(offset)
@@ -73,7 +74,7 @@ class RootBlockDevice(
         }
     }
 
-    override suspend fun sync() = withContext(Dispatchers.IO) {
+    override suspend fun sync(): Unit = withContext(Dispatchers.IO) {
         // O modo "rws" do SuRandomAccessFile força sincronização a cada escrita
     }
 
