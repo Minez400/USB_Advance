@@ -106,6 +106,13 @@ bool ExFatFormatter::format(
     // Buffer de 12 setores para a Boot Region (Setores 0 a 11)
     std::vector<uint8_t> boot_region(12 * sector_size, 0);
 
+    // Cálculo dinâmico de clusters necessários para cada estrutura
+    uint32_t bitmap_bytes = (cluster_count + 7) / 8;
+    uint32_t bitmap_clusters = (bitmap_bytes + cluster_size - 1) / cluster_size;
+    uint32_t upcase_clusters = (5120 + cluster_size - 1) / cluster_size;
+    uint32_t upcase_cluster = 2 + bitmap_clusters;
+    uint32_t root_dir_cluster = upcase_cluster + upcase_clusters;
+
     // Setor 0: VBR
     uint8_t* vbr = &boot_region[0];
     vbr[0] = 0xEB; vbr[1] = 0x76; vbr[2] = 0x90;
@@ -116,7 +123,7 @@ bool ExFatFormatter::format(
     *reinterpret_cast<uint32_t*>(&vbr[84]) = fat_length_sectors;
     *reinterpret_cast<uint32_t*>(&vbr[88]) = cluster_heap_offset;
     *reinterpret_cast<uint32_t*>(&vbr[92]) = cluster_count;
-    *reinterpret_cast<uint32_t*>(&vbr[96]) = 4; // Primeiro cluster do Root Directory
+    *reinterpret_cast<uint32_t*>(&vbr[96]) = root_dir_cluster; // Primeiro cluster do Root Directory
     *reinterpret_cast<uint32_t*>(&vbr[100]) = volume_serial;
     *reinterpret_cast<uint16_t*>(&vbr[104]) = 0x0100; // Revisão 1.00
     *reinterpret_cast<uint16_t*>(&vbr[106]) = 0; // Volume Flags
@@ -139,18 +146,9 @@ bool ExFatFormatter::format(
     boot_region[10 * sector_size + 510] = 0x55;
     boot_region[10 * sector_size + 511] = 0xAA;
 
-    // Cálculo dinâmico de clusters necessários para cada estrutura
-    uint32_t bitmap_bytes = (cluster_count + 7) / 8;
-    uint32_t bitmap_clusters = (bitmap_bytes + cluster_size - 1) / cluster_size;
-    uint32_t upcase_clusters = (5120 + cluster_size - 1) / cluster_size;
-    uint32_t upcase_cluster = 2 + bitmap_clusters;
-    uint32_t root_dir_cluster = upcase_cluster + upcase_clusters;
-
-    // Atualiza o primeiro cluster do Root Directory no VBR (offset 96)
-    *reinterpret_cast<uint32_t*>(&vbr[96]) = root_dir_cluster;
-
-    // Recalcula o checksum do boot sector agora com o cluster raiz exato
-    checksum = calculateBootChecksum(boot_region.data(), 11 * sector_size);
+    // Setor 11: Boot Checksum Sector
+    uint32_t checksum = calculateBootChecksum(boot_region.data(), 11 * sector_size);
+    uint32_t* chk_ptr = reinterpret_cast<uint32_t*>(&boot_region[11 * sector_size]);
     for (size_t k = 0; k < sector_size / 4; ++k) {
         chk_ptr[k] = checksum;
     }
