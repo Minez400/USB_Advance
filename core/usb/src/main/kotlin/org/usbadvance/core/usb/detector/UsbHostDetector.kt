@@ -123,7 +123,11 @@ class UsbHostDetector(private val context: Context) {
         }
     }
 
-    private suspend fun refreshDevicesInternal() = withContext(Dispatchers.IO) {
+    suspend fun refreshDevicesAsync(): List<IStorageDevice> = withContext(Dispatchers.IO) {
+        refreshDevicesInternal()
+    }
+
+    private suspend fun refreshDevicesInternal(): List<IStorageDevice> = withContext(Dispatchers.IO) {
         val detectedList = mutableListOf<IStorageDevice>()
         val deviceList = try {
             usbManager.deviceList
@@ -194,6 +198,7 @@ class UsbHostDetector(private val context: Context) {
         }
 
         _connectedDevices.value = detectedList
+        return@withContext detectedList
     }
 
     private fun queryCapacitySafely(device: UsbDevice, usbInterface: UsbInterface): DiskGeometry {

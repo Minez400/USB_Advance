@@ -45,8 +45,22 @@ class DeviceListViewModel(
     }
 
     fun refresh() {
-        _uiState.value = _uiState.value.copy(isLoading = true)
-        usbHostDetector.refreshDevices()
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            try {
+                val devices = usbHostDetector.refreshDevicesAsync()
+                _uiState.value = _uiState.value.copy(
+                    devices = devices,
+                    errorMessage = null
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = "Erro ao atualizar: ${e.localizedMessage ?: e.message}"
+                )
+            } finally {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
+        }
     }
 
     fun selectDevice(device: IStorageDevice, onDeviceReady: (IStorageDevice) -> Unit) {

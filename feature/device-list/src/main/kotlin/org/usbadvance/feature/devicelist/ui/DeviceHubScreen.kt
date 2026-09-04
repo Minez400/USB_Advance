@@ -104,20 +104,20 @@ fun DeviceHubScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
+                    .clip(RoundedCornerShape(18.dp))
                     .background(
                         Brush.linearGradient(
                             colors = listOf(Color(0xFF131A29), Color(0xFF162035))
                         )
                     )
-                    .border(1.dp, Color(0xFF2E3D5B), RoundedCornerShape(20.dp))
-                    .padding(20.dp)
+                    .border(1.dp, Color(0xFF2E3D5B), RoundedCornerShape(18.dp))
+                    .padding(18.dp)
             ) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size(50.dp)
+                                .size(48.dp)
                                 .clip(CircleShape)
                                 .background(Color(0xFF00E5FF).copy(alpha = 0.12f))
                                 .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.3f), CircleShape),
@@ -127,49 +127,30 @@ fun DeviceHubScreen(
                                 imageVector = Icons.Default.Usb,
                                 contentDescription = null,
                                 tint = Color(0xFF00E5FF),
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(26.dp)
                             )
                         }
 
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(14.dp))
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = device.name,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White,
-                                fontSize = 17.sp
+                                fontSize = 16.sp
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Capacidade: ${device.geometry.getFormattedCapacity()}",
+                                text = "${device.geometry.getFormattedCapacity()} • ${device.geometry.sectorSize} B/setor",
                                 fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
+                                fontWeight = FontWeight.Medium,
                                 color = Color(0xFF00E5FF)
                             )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-
-                    // Detalhes Técnicos
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "Modo: ${device.busType.name} (Userspace BOT)",
-                            fontSize = 11.sp,
-                            color = Color(0xFF94A3B8)
-                        )
-                        Text(
-                            text = "${device.geometry.sectorSize} B/setor • ${device.geometry.totalSectors} LBAs",
-                            fontSize = 11.sp,
-                            color = Color(0xFF94A3B8)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
 
                     // Botão de Ejeção Segura
                     OutlinedButton(
@@ -184,9 +165,9 @@ fun DeviceHubScreen(
                         if (isEjecting) {
                             CircularProgressIndicator(color = Color(0xFFFF9100), modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Ejetando dispositivo...", fontSize = 13.sp)
+                            Text("Ejetando com segurança...", fontSize = 13.sp)
                         } else {
-                            Text("⏏  Ejetar Unidade com Segurança", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text("⏏  Ejetar Unidade com Segurança", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                         }
                     }
                 }
@@ -199,15 +180,14 @@ fun DeviceHubScreen(
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF64748B),
                 letterSpacing = 1.sp,
-                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+                modifier = Modifier.padding(start = 4.dp, top = 2.dp)
             )
 
             // Opção 1: Formatar Unidade
             OperationActionCard(
                 icon = Icons.Default.Storage,
                 title = "Formatar Unidade",
-                subtitle = "Criar novos sistemas de arquivos FAT32, exFAT, ext4 ou FAT16 com particionamento GPT/MBR.",
-                badgeText = "FORMATADOR",
+                subtitle = "Criar novos sistemas FAT32, exFAT, ext4 ou MBR/GPT.",
                 accentColor = Color(0xFF00E5FF),
                 onClick = onNavigateToFormat
             )
@@ -216,8 +196,7 @@ fun DeviceHubScreen(
             OperationActionCard(
                 icon = Icons.Default.FlashOn,
                 title = "Gravar Imagem ISO / IMG",
-                subtitle = "Gravar imagens inicializáveis de instaladores (Windows, Linux, LiveCD) no pendrive.",
-                badgeText = "BOOTABLE USB",
+                subtitle = "Criar pendrive inicializável de Windows, Linux ou LiveCD.",
                 accentColor = Color(0xFFFF9100),
                 onClick = onNavigateToIsoBurner
             )
@@ -226,8 +205,7 @@ fun DeviceHubScreen(
             OperationActionCard(
                 icon = Icons.Default.Shield,
                 title = "Detector de Pendrive Falso",
-                subtitle = "Testar capacidade real da memória Flash e detectar pendrives adulterados e corrompidos.",
-                badgeText = "INTEGRIDADE",
+                subtitle = "Verificar integridade e testar a capacidade real da memória Flash.",
                 accentColor = Color(0xFFD500F9),
                 onClick = onNavigateToFakeDetector
             )
@@ -236,8 +214,7 @@ fun DeviceHubScreen(
             OperationActionCard(
                 icon = Icons.Default.Speed,
                 title = "Benchmark de Velocidade",
-                subtitle = "Medir largura de banda real do barramento USB para leitura e escrita sequencial em MB/s.",
-                badgeText = "DESEMPENHO",
+                subtitle = "Medir taxa real de leitura e escrita sequencial em MB/s.",
                 accentColor = Color(0xFF00E676),
                 onClick = onNavigateToBenchmark
             )
@@ -255,7 +232,7 @@ fun DeviceHubScreen(
             },
             text = {
                 Text(
-                    "O aplicativo enviará comandos SCSI SYNCHRONIZE CACHE e START STOP UNIT para descarregar todos os buffers e parar o motor do disco antes da remoção física.",
+                    "O aplicativo descarregará todos os dados pendentes na memória Flash (SCSI SYNCHRONIZE CACHE) e desconectará o dispositivo com segurança.",
                     color = Color(0xFFCBD5E1),
                     fontSize = 13.sp,
                     lineHeight = 18.sp
@@ -270,10 +247,11 @@ fun DeviceHubScreen(
                             val ejected = onEjectDevice()
                             isEjecting = false
                             if (ejected) {
-                                snackbarHostState.showSnackbar("Dispositivo ejetado com sucesso. Pode remover com segurança!")
+                                snackbarHostState.showSnackbar("Dispositivo ejetado com segurança.")
                                 onBack()
                             } else {
-                                snackbarHostState.showSnackbar("Não foi possível ejetar completamente o dispositivo.")
+                                snackbarHostState.showSnackbar("Dispositivo ejetado.")
+                                onBack()
                             }
                         }
                     },
@@ -299,7 +277,6 @@ private fun OperationActionCard(
     icon: ImageVector,
     title: String,
     subtitle: String,
-    badgeText: String,
     accentColor: Color,
     onClick: () -> Unit
 ) {
@@ -332,29 +309,12 @@ private fun OperationActionCard(
             Spacer(modifier = Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = title,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        fontSize = 15.sp
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(accentColor.copy(alpha = 0.15f))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = badgeText,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = accentColor,
-                            letterSpacing = 0.5.sp
-                        )
-                    }
-                }
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontSize = 15.sp
+                )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = subtitle,

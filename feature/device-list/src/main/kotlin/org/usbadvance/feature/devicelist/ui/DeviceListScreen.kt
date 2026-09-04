@@ -59,48 +59,31 @@ fun DeviceListScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "USB Advance",
-                            fontWeight = FontWeight.Black,
-                            fontSize = 22.sp,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFF00E5FF).copy(alpha = 0.15f))
-                                .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.4f), RoundedCornerShape(8.dp))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = "PRO",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF00E5FF)
-                            )
-                        }
-                    }
+                    Text(
+                        text = "USB Advance",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = Color.White
+                    )
                 },
                 actions = {
                     Box(
                         modifier = Modifier
                             .padding(end = 16.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (state.isRootAvailable) Color(0xFF2E1A47) else Color(0xFF0C243C))
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (state.isRootAvailable) Color(0xFF2E1A47) else Color(0xFF1E293B))
                             .border(
                                 1.dp,
-                                if (state.isRootAvailable) Color(0xFFAB47BC) else Color(0xFF00B0FF),
-                                RoundedCornerShape(12.dp)
+                                if (state.isRootAvailable) Color(0xFFAB47BC).copy(alpha = 0.5f) else Color(0xFF00E5FF).copy(alpha = 0.3f),
+                                RoundedCornerShape(8.dp)
                             )
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = if (state.isRootAvailable) "ROOT ATIVO" else "USB HOST DIRECT",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (state.isRootAvailable) Color(0xFFE1BEE7) else Color(0xFF80D8FF)
+                            text = if (state.isRootAvailable) "ROOT" else "USB OTG",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (state.isRootAvailable) Color(0xFFCE93D8) else Color(0xFF00E5FF)
                         )
                     }
                 },
@@ -127,8 +110,16 @@ fun DeviceListScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            if (state.isLoading && state.devices.isNotEmpty()) {
+                androidx.compose.material3.LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth().height(3.dp).align(Alignment.TopCenter),
+                    color = Color(0xFF00E5FF),
+                    trackColor = Color.Transparent
+                )
+            }
+
             when {
-                state.isLoading -> {
+                state.isLoading && state.devices.isEmpty() -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
                         color = Color(0xFF00E5FF)

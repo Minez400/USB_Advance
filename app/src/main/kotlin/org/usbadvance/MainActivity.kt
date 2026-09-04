@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -79,6 +81,18 @@ fun UsbAdvanceNavGraph(
 ) {
     val navController = rememberNavController()
     var selectedDevice by remember { mutableStateOf<IStorageDevice?>(null) }
+
+    val deviceState by deviceListViewModel.uiState.collectAsState()
+    val connectedDevices = deviceState.devices
+
+    // Retorna automaticamente para a lista se o dispositivo selecionado for desconectado fisicamente
+    LaunchedEffect(connectedDevices, selectedDevice) {
+        val current = selectedDevice
+        if (current != null && !connectedDevices.any { it.id == current.id }) {
+            selectedDevice = null
+            navController.popBackStack("device_list", inclusive = false)
+        }
+    }
 
     NavHost(
         navController = navController,
