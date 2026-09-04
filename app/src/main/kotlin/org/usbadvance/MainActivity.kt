@@ -18,11 +18,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.usbadvance.core.storage.api.IStorageDevice
 import org.usbadvance.core.usb.detector.UsbHostDetector
+import org.usbadvance.feature.devicelist.ui.DeviceHubScreen
 import org.usbadvance.feature.devicelist.ui.DeviceListScreen
 import org.usbadvance.feature.devicelist.vm.DeviceListViewModel
-import org.usbadvance.feature.diagnostic.engine.BenchmarkResult
 import org.usbadvance.feature.diagnostic.ui.DiagnosticScreen
+import org.usbadvance.feature.diagnostic.ui.FakeDetectorScreen
 import org.usbadvance.feature.formatter.ui.FormatWizardScreen
+import org.usbadvance.feature.formatter.ui.IsoBurnerScreen
 import org.usbadvance.feature.formatter.vm.FormatterViewModel
 import org.usbadvance.ui.theme.UsbAdvanceTheme
 
@@ -77,7 +79,6 @@ fun UsbAdvanceNavGraph(
 ) {
     val navController = rememberNavController()
     var selectedDevice by remember { mutableStateOf<IStorageDevice?>(null) }
-    var benchmarkResult by remember { mutableStateOf<BenchmarkResult?>(null) }
 
     NavHost(
         navController = navController,
@@ -90,10 +91,37 @@ fun UsbAdvanceNavGraph(
                     deviceListViewModel.selectDevice(device) { readyDevice ->
                         selectedDevice = readyDevice
                         formatterViewModel.selectDevice(readyDevice)
-                        navController.navigate("format_wizard")
+                        navController.navigate("device_hub")
                     }
                 }
             )
+        }
+
+        composable("device_hub") {
+            selectedDevice?.let { dev ->
+                DeviceHubScreen(
+                    device = dev,
+                    onNavigateToFormat = {
+                        formatterViewModel.selectDevice(dev)
+                        navController.navigate("format_wizard")
+                    },
+                    onNavigateToIsoBurner = {
+                        navController.navigate("iso_burner")
+                    },
+                    onNavigateToFakeDetector = {
+                        navController.navigate("fake_detector")
+                    },
+                    onNavigateToBenchmark = {
+                        navController.navigate("diagnostic")
+                    },
+                    onEjectDevice = {
+                        deviceListViewModel.ejectDevice(dev)
+                    },
+                    onBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
 
         composable("format_wizard") {
@@ -105,14 +133,32 @@ fun UsbAdvanceNavGraph(
             )
         }
 
+        composable("iso_burner") {
+            selectedDevice?.let { dev ->
+                IsoBurnerScreen(
+                    device = dev,
+                    onBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+        }
+
+        composable("fake_detector") {
+            selectedDevice?.let { dev ->
+                FakeDetectorScreen(
+                    device = dev,
+                    onBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+        }
+
         composable("diagnostic") {
             selectedDevice?.let { dev ->
                 DiagnosticScreen(
                     device = dev,
-                    benchmarkResult = benchmarkResult,
-                    onRunBenchmark = {
-                        // Dispara benchmark
-                    },
                     onBack = {
                         navController.popBackStack()
                     }

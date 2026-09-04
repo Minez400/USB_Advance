@@ -82,6 +82,19 @@ class UsbBlockDevice(
         return@withContext false
     }
 
+    override suspend fun eject(): Boolean = withContext(Dispatchers.IO) {
+        return@withContext try {
+            sync()
+            val cdb = ScsiCommands.startStopUnit(start = false, loadEject = true)
+            botHandler.executeCommand(cdb, null, directionIn = false)
+            close()
+            true
+        } catch (e: Exception) {
+            close()
+            false
+        }
+    }
+
     override fun close() {
         try {
             connection.releaseInterface(usbInterface)

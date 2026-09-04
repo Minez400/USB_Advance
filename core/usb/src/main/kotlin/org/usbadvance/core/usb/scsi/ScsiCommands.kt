@@ -78,6 +78,16 @@ object ScsiCommands {
         )
     }
 
+    fun startStopUnit(start: Boolean = false, loadEject: Boolean = true): ByteArray {
+        val cdb = ByteArray(6)
+        cdb[0] = 0x1B.toByte() // Opcode START STOP UNIT
+        var param = 0
+        if (loadEject) param = param or 0x02
+        if (start) param = param or 0x01
+        cdb[4] = param.toByte()
+        return cdb
+    }
+
     // Decodificadores de Resposta SCSI
 
     data class InquiryInfo(

@@ -69,6 +69,10 @@ class DeviceListViewModel(
         }
     }
 
+    suspend fun ejectDevice(device: IStorageDevice): Boolean {
+        return usbHostDetector.ejectDevice(device)
+    }
+
     override fun onCleared() {
         super.onCleared()
         usbHostDetector.stopListening()

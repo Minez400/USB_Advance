@@ -103,6 +103,20 @@ class UsbHostDetector(private val context: Context) {
         return granted
     }
 
+    suspend fun ejectDevice(device: IStorageDevice): Boolean = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val blockDevice = device.openBlockDevice()
+            val result = blockDevice.eject()
+            geometryCache.remove(device.id)
+            refreshDevices()
+            result
+        } catch (e: Exception) {
+            geometryCache.remove(device.id)
+            refreshDevices()
+            false
+        }
+    }
+
     fun refreshDevices() {
         detectorScope.launch {
             refreshDevicesInternal()

@@ -51,4 +51,9 @@ interface IBlockDevice : Closeable {
      * Verifica se o dispositivo possui chave física ou flag de proteção contra gravação (Write-Protect).
      */
     suspend fun isWriteProtected(): Boolean
+
+    /**
+     * Descarrega caches e estaciona o dispositivo para ejeção segura.
+     */
+    suspend fun eject(): Boolean = false
 }
