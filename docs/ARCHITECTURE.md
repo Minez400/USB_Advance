@@ -1,48 +1,46 @@
-# Arquitetura do Sistema - USB Advance
+# System Architecture - USB Advance
 
-## 1. Visão Geral
-O **USB Advance** foi concebido sob os princípios de Clean Architecture e separação de responsabilidades. O objetivo central é fornecer capacidades de particionamento e formatação de discos USB OTG sem necessidade de privilégios de superusuário (Root), mantendo paralelamente um backend com suporte a Root para cartões MicroSD internos e nós `/dev/block/`.
+## 1. Overview
+**USB Advance** is engineered under Clean Architecture principles with strict separation of concerns. The primary objective is to deliver robust partitioning, formatting, and diagnostic capabilities for USB/OTG storage devices without requiring superuser (Root) privileges, while maintaining an optional Root block backend for internal MicroSD cards and `/dev/block/` nodes.
 
 ---
 
-## 2. Diagrama de Módulos e Dependências
+## 2. Module & Layer Diagram
 
 ```
-               +--------------------------------------+
-               |                 :app                 |
-               +-------------------+------------------+
-                                   |
-            +----------------------+----------------------+
-            |                                             |
-   +--------v-------------+                      +--------v------------+
-   | :feature:device-list |                      | :feature:formatter  |
-   +--------+-------------+                      +--------+------------+
-            |                                             |
-            +----------------------+----------------------+
-                                   |
-                       +-----------v------------+
-                       |   :core:storage-api    | <--- Contratos, Modelos e SPI
-                       +-----------+------------+
-                                   |
-         +-------------------------+-------------------------+
-         |                         |                         |
-+--------v--------+       +--------v--------+       +--------v--------+
-|    :core:usb    |       | :core:partition |       |   :core:root    |
-| (BOT & SCSI)    |       |   (MBR & GPT)   |       | (libsu backend) |
-+--------+--------+       +--------+--------+       +-----------------+
-         |                         |
-         +------------+------------+
+                 +--------------------------------------+
+                 |                 :app                 |
+                 |  Jetpack Compose UI & Feature Layers |
+                 +-------------------+------------------+
+                                     |
+                                     | depends on
+                                     v
+                 +--------------------------------------+
+                 |                :core                 |
+                 |  Low-Level Storage Library & Native  |
+                 +-------------------+------------------+
+                                     |
+       +-----------------------------+-----------------------------+
+       |                             |                             |
++------v------+               +------v------+               +------v------+
+|  core.usb   |               | core.part   |               |  core.root  |
+| (BOT & SCSI)|               | (MBR & GPT) |               | (libsu I/O) |
++------+------+               +------+------+               +-------------+
+       |                             |
+       +--------------+--------------+
                       |
-             +--------v---------+
-             |  :core:fs-native | <--- Motores C++20 (FAT16/32, exFAT, ext4)
-             +------------------+
+             +--------v--------+
+             |   core.native   | <--- High-Performance C++20 Formatter Engines
+             | (exFAT, NTFS,   |      (CMake + NDK r27b with 16 KB ELF alignment)
+             |  ext4, FAT32)   |
+             +-----------------+
 ```
 
 ---
 
-## 3. Padrão SPI (Service Provider Interface)
+## 3. Service Provider Interface (SPI) Pattern
 
-A interface central de extensão é `FilesystemProvider`:
+The core filesystem abstraction is modeled via the `FilesystemProvider` interface:
 
 ```kotlin
 interface FilesystemProvider {
@@ -60,10 +58,11 @@ interface FilesystemProvider {
 }
 ```
 
-Cada formato é um provedor isolado:
-* `Fat32FilesystemProvider`: Formata FAT32 para compatibilidade máxima.
-* `ExFatFilesystemProvider`: Formata exFAT para suportar arquivos > 4 GB.
-* `Ext4FilesystemProvider`: Formata ext4 para sistemas Linux com suporte a extents.
-* `Fat16FilesystemProvider`: Formata FAT16 para mídias industriais e legadas.
+Each filesystem is completely isolated and pluggable:
+* `ExFatFilesystemProvider`: Native C++20 exFAT format with automatic Allocation Bitmap and 128 KB Up-case table generation.
+* `NtfsFilesystemProvider`: Native C++20 NTFS format with standard 4 KB clusters and valid Master File Table (MFT) structures.
+* `Fat32FilesystemProvider`: Universal FAT32 formatting with compatibility across PCs, TVs, and retro consoles.
+* `Ext4FilesystemProvider`: Native ext4 format with optional zero-journaling mode for flash longevity.
+* `Fat16FilesystemProvider`: Legacy FAT16 format for industrial machinery and vintage hardware.
 
-Para adicionar novos formatos no futuro (como F2FS, NTFS ou Btrfs), basta criar uma nova implementação de `FilesystemProvider` e registrá-la em `FilesystemRegistry.register()`, sem necessidade de alterar a interface gráfica ou a camada de transporte USB.
+To add new formats in the future (such as F2FS or Btrfs), developers only need to implement `FilesystemProvider` and register it in `FilesystemRegistry.register()`, without altering the Compose UI or the USB transport layers.

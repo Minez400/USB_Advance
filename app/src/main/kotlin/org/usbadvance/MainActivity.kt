@@ -2,8 +2,8 @@ package org.usbadvance
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -26,33 +27,64 @@ import org.usbadvance.feature.devicelist.vm.DeviceListViewModel
 import org.usbadvance.feature.diagnostic.ui.DiagnosticScreen
 import org.usbadvance.feature.diagnostic.ui.FakeDetectorScreen
 import org.usbadvance.feature.formatter.ui.FormatWizardScreen
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
 import org.usbadvance.feature.formatter.ui.IsoBurnerScreen
 import org.usbadvance.feature.formatter.vm.FormatterViewModel
+import org.usbadvance.feature.settings.data.SettingsManager
+import org.usbadvance.feature.settings.ui.SettingsScreen
+import org.usbadvance.feature.settings.vm.SettingsViewModel
+import org.usbadvance.ui.overlay.DeveloperPerformanceOverlay
 import org.usbadvance.ui.theme.UsbAdvanceTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var usbHostDetector: UsbHostDetector
     private lateinit var deviceListViewModel: DeviceListViewModel
     private lateinit var formatterViewModel: FormatterViewModel
+    private lateinit var settingsManager: SettingsManager
+    private lateinit var settingsViewModel: SettingsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        settingsManager = SettingsManager.getInstance(applicationContext)
+        settingsViewModel = SettingsViewModel(settingsManager)
 
         usbHostDetector = UsbHostDetector(applicationContext)
         deviceListViewModel = DeviceListViewModel(usbHostDetector)
         formatterViewModel = FormatterViewModel()
 
         setContent {
+            val appSettings by settingsViewModel.settings.collectAsStateWithLifecycle()
+
+            LaunchedEffect(appSettings.enableFakeUsbDrive) {
+                deviceListViewModel.setEnableFakeUsb(appSettings.enableFakeUsbDrive)
+            }
+
             UsbAdvanceTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    UsbAdvanceNavGraph(
-                        deviceListViewModel = deviceListViewModel,
-                        formatterViewModel = formatterViewModel
-                    )
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        UsbAdvanceNavGraph(
+                            deviceListViewModel = deviceListViewModel,
+                            formatterViewModel = formatterViewModel,
+                            settingsViewModel = settingsViewModel
+                        )
+
+                        if (appSettings.developerMode) {
+                            DeveloperPerformanceOverlay(
+                                visible = true,
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .padding(top = 10.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -77,13 +109,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun UsbAdvanceNavGraph(
     deviceListViewModel: DeviceListViewModel,
-    formatterViewModel: FormatterViewModel
+    formatterViewModel: FormatterViewModel,
+    settingsViewModel: SettingsViewModel
 ) {
     val navController = rememberNavController()
     var selectedDevice by remember { mutableStateOf<IStorageDevice?>(null) }
 
-    val deviceState by deviceListViewModel.uiState.collectAsState()
+    val deviceState by deviceListViewModel.uiState.collectAsStateWithLifecycle()
     val connectedDevices = deviceState.devices
+    val appSettings by settingsViewModel.settings.collectAsStateWithLifecycle()
 
     // Automatically pop back to device list if the currently selected device is physically unplugged
     LaunchedEffect(connectedDevices, selectedDevice) {
@@ -96,17 +130,31 @@ fun UsbAdvanceNavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = "device_list"
+        startDestination = "main_screen"
     ) {
-        composable("device_list") {
-            DeviceListScreen(
-                viewModel = deviceListViewModel,
+        composable("main_screen") {
+            org.usbadvance.ui.MainScreen(
+                deviceListViewModel = deviceListViewModel,
+                settingsViewModel = settingsViewModel,
+                rootNavController = navController,
                 onDeviceSelected = { device ->
                     deviceListViewModel.selectDevice(device) { readyDevice ->
                         selectedDevice = readyDevice
-                        formatterViewModel.selectDevice(readyDevice)
+                        formatterViewModel.selectDevice(
+                            device = readyDevice,
+                            preferredFs = appSettings.defaultFileSystem,
+                            preferredQuickFormat = appSettings.defaultQuickFormat
+                        )
                         navController.navigate("device_hub")
                     }
+                },
+                onNavigateToBenchmark = { device ->
+                    selectedDevice = device
+                    navController.navigate("diagnostic")
+                },
+                onNavigateToFakeDetector = { device ->
+                    selectedDevice = device
+                    navController.navigate("fake_detector")
                 }
             )
         }
@@ -116,7 +164,11 @@ fun UsbAdvanceNavGraph(
                 DeviceHubScreen(
                     device = dev,
                     onNavigateToFormat = {
-                        formatterViewModel.selectDevice(dev)
+                        formatterViewModel.selectDevice(
+                            device = dev,
+                            preferredFs = appSettings.defaultFileSystem,
+                            preferredQuickFormat = appSettings.defaultQuickFormat
+                        )
                         navController.navigate("format_wizard")
                     },
                     onNavigateToIsoBurner = {
@@ -143,7 +195,8 @@ fun UsbAdvanceNavGraph(
                 viewModel = formatterViewModel,
                 onBack = {
                     navController.popBackStack()
-                }
+                },
+                requireStrictConfirmation = appSettings.strictSafetyConfirmation
             )
         }
 
@@ -175,9 +228,19 @@ fun UsbAdvanceNavGraph(
                     device = dev,
                     onBack = {
                         navController.popBackStack()
-                    }
+                    },
+                    ioBlockSizeBytes = appSettings.ioBlockSizeBytes
                 )
             }
+        }
+
+        composable("settings") {
+            SettingsScreen(
+                viewModel = settingsViewModel,
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

@@ -1,29 +1,64 @@
-# Guia de Contribuição - USB Advance
+# Contributing to USB Advance
 
-Agradecemos o seu interesse em contribuir para o **USB Advance**! Este é um projeto de código aberto e colaborações de desenvolvedores, testadores e tradutores são muito bem-vindas.
+Thank you for your interest in contributing to **USB Advance**! 
 
----
-
-## 🛠️ Como Começar
-
-1. **Faça um Fork do Repositório**:
-   Crie uma ramificação a partir da branch `main`.
-
-2. **Padrões de Código**:
-   * **Kotlin**: Siga o guia oficial do Kotlin e mantenha o código modularizado.
-   * **Jetpack Compose**: Use StateFlow e funções composable de responsabilidade única.
-   * **C++20 (NDK)**: Utilize smart pointers (`std::unique_ptr`, `std::shared_ptr`), evite vazamentos de memória e garanta alinhamento de 16 KB no linker.
-
-3. **Submissão de Mudanças**:
-   * Crie uma branch com nome descritivo: `git checkout -b feature/suporte-f2fs` ou `fix/scsi-timeout-recovery`.
-   * Escreva testes unitários cobrindo novas funcionalidades.
-   * Abra um Pull Request utilizando o modelo oficial.
+This is an open-source project created through human-AI pair-programming collaboration. Whether you are a developer, security researcher, tester, or translator, contributions from all skill levels are warmly welcome.
 
 ---
 
-## 🧪 Regras de Testes
-Antes de submeter o seu Pull Request, certifique-se de que a suíte completa de testes passa localmente:
+## 🛠️ How to Contribute
+
+### 1. Fork and Clone
+1. Fork the repository on GitHub.
+2. Clone your fork locally:
+   ```bash
+   git clone https://github.com/your-username/USB_Advance.git
+   cd USB_Advance
+   ```
+3. Create a descriptive feature or bugfix branch:
+   ```bash
+   git checkout -b feature/btrfs-support
+   # or
+   git checkout -b fix/usb-bot-stall-recovery
+   ```
+
+### 2. Code Standards
+* **Kotlin (Jetpack Compose)**:
+  * Follow official Kotlin coding conventions.
+  * Keep coroutine I/O off the main thread: all USB transfers and disk access must run on `Dispatchers.IO`.
+  * Compose UI state should be driven reactively via `StateFlow`.
+* **C++20 (NDK)**:
+  * Use modern C++20 features and RAII (`std::unique_ptr`, `std::span`).
+  * Ensure all native binaries compile with 16 KB page-size ELF alignment (`-Wl,-z,max-page-size=16384`).
+  * Avoid raw memory allocations and memory leaks.
+* **Code Comments**:
+  * All in-code comments and docstrings must be written in **English**.
+* **Translations / Localization**:
+  * User-facing UI strings reside in `app/src/main/res/values/strings.xml` (default English) and `app/src/main/res/values-pt/strings.xml` (Portuguese). Additional language translations are encouraged!
+
+---
+
+## 🧪 Testing Guidelines
+
+Before opening a pull request, ensure the unit test suite and builds succeed locally:
+
 ```bash
-./gradlew check
+# Run unit tests
 ./gradlew testDebugUnitTest
+
+# Verify Release compilation and R8 minification
+./gradlew assembleRelease
 ```
+
+---
+
+## 📬 Submitting a Pull Request
+
+1. Push your branch to your GitHub fork:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+2. Open a Pull Request against the `main` branch.
+3. Provide a clear, detailed summary of your changes, motivation, and any hardware/OTG devices used for testing.
+
+Thank you for helping make USB Advance better for everyone!

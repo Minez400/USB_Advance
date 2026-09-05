@@ -23,17 +23,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "USB_Advance"
 
-// Core modules
-include(":core:storage-api")
-include(":core:usb")
-include(":core:partition")
-include(":core:fs-native")
-include(":core:root")
+// Core storage, USB, partitions & native formatters engine
+include(":core")
 
-// Feature modules
-include(":feature:device-list")
-include(":feature:formatter")
-include(":feature:diagnostic")
-
-// Application entrypoint
+// Application entrypoint & UI
 include(":app")

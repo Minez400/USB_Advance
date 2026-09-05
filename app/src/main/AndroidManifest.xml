@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Requisito de Hardware USB Host para operação direta sem root -->
+    <!-- USB Host Hardware Feature required for direct userspace access without root -->
     <uses-feature
         android:name="android.hardware.usb.host"
         android:required="true" />
 
-    <!-- Permissões de Foreground Service para Android 14 (API 34) e Android 15 -->
+    <!-- Foreground Service permissions for Android 14 (API 34) and Android 15 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
-    <!-- Prevenção de suspensão de CPU durante gravações longas -->
+    <!-- CPU WakeLock prevention during lengthy write operations -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <!-- Notificações em segundo plano para Android 13+ -->
+    <!-- Background notifications for Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
@@ -26,7 +26,9 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        android:theme="@style/Theme.UsbAdvance"
+        android:largeHeap="true"
+        android:localeConfig="@xml/locales_config">
 
         <activity
             android:name=".MainActivity"
@@ -37,7 +39,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Intercepta evento de conexão física do pendrive USB OTG -->
+            <!-- Intercept physical USB OTG mass storage connection event -->
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
@@ -46,7 +48,7 @@
                 android:resource="@xml/device_filter" />
         </activity>
 
-        <!-- Serviço em primeiro plano resistente a Low Memory Killer -->
+        <!-- Low Memory Killer resistant foreground service -->
         <service
             android:name="org.usbadvance.feature.formatter.service.FormatForegroundService"
             android:exported="false"

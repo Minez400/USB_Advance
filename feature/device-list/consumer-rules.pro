@@ -1,1 +1,0 @@
-# Consumidor feature:device-list
