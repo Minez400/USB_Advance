@@ -1,0 +1,48 @@
+name: Relato de Bug
+description: Crie um relatório para nos ajudar a identificar e corrigir falhas
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Obrigado por relatar um problema no USB Advance! Por favor, forneça as informações abaixo.
+  - type: input
+    id: device_info
+    attributes:
+      label: Dispositivo e Versão do Android
+      description: Ex: Samsung Galaxy S23, Android 14 (One UI 6.1)
+    validations:
+      required: true
+  - type: input
+    id: usb_info
+    attributes:
+      label: Modelo do Dispositivo USB / Adaptador OTG
+      description: Ex: Pendrive SanDisk Ultra Dual 64GB conectado via USB-C direto
+    validations:
+      required: true
+  - type: dropdown
+    id: root_status
+    attributes:
+      label: O smartphone possui Root?
+      options:
+        - "Não (Modo Padrão USB Host)"
+        - "Sim (Magisk / KernelSU / APatch)"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para reproduzir
+      description: O que você fez antes de o erro acontecer?
+      placeholder: |
+        1. Conectei o pendrive via OTG
+        2. Selecionei o formato exFAT
+        3. Confirmei a formatação
+        4. Ocorreu o erro X
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs ou Mensagem de Erro
+      description: Cole aqui o log exportado pela tela de diagnóstico, se disponível.

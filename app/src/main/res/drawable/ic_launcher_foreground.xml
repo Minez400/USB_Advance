@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- ==================== Minimalist "A" Emblem (Advance Chevron) ==================== -->
+    <!-- Left Wing of Chevron in Futuristic Electric Blue -->
+    <path
+        android:fillColor="#00B0FF"
+        android:pathData="M54,23 L25,79 L35,79 L54,39 L54,23 Z" />
+
+    <!-- Right Wing of Chevron in High-Contrast Neon Cyan -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M54,23 L83,79 L73,79 L54,39 L54,23 Z" />
+
+    <!-- Focal Point Highlight on Top Apex -->
+    <path
+        android:fillColor="#E0F7FA"
+        android:pathData="M54,23 L57,29 L54,27 L51,29 Z" />
+
+    <!-- ==================== USB Trident Integrated into Core ==================== -->
+    <!-- Base Circular Connection Node -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M54,77 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0" />
+
+    <!-- Central Data Bus Stem -->
+    <path
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M54,74 L54,49" />
+
+    <!-- Top Arrowhead on Central Stem -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,42 L59,49 L49,49 Z" />
+
+    <!-- Left Branch of USB Trident (with Circular Node) -->
+    <path
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M54,63 L45,57 L45,53" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M45,51 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
+
+    <!-- Right Branch of USB Trident (with Square Node) -->
+    <path
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M54,63 L63,57 L63,53" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M60.5,48.5 h5 v5 h-5 z" />
+
+</vector>

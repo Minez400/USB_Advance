@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">USB Advance</string>
+
+    <!-- Device List Screen -->
+    <string name="device_list_title">USB Advance</string>
+    <string name="device_list_refresh">Atualizar Lista</string>
+    <string name="device_list_settings">Configurações</string>
+    <string name="device_list_root_badge">ROOT</string>
+    <string name="device_list_otg_badge">USB OTG</string>
+    <string name="device_list_empty_icon">OTG Desconectado</string>
+    <string name="device_list_empty_title">Aguardando Dispositivo USB / OTG</string>
+    <string name="device_list_empty_desc">Conecte seu pendrive, SSD externo ou leitor de cartão na porta USB-C através de um adaptador OTG.</string>
+    <string name="device_list_secure_isolation">Isolamento Seguro</string>
+    <string name="device_list_low_level_scsi">SCSI de Baixo Nível</string>
+    <string name="device_list_controller_connected">Controlador USB Conectado</string>
+    <string name="device_list_devices_detected">%1$d Dispositivo(s) Detectado(s)</string>
+    <string name="device_list_storage_devices">Dispositivos de Armazenamento</string>
+    <string name="bottom_nav_devices">Dispositivos</string>
+
+    <!-- Device Card & Visualizer -->
+    <string name="device_card_usb_icon">Ícone USB</string>
+    <string name="device_card_locked">TRAVADO</string>
+    <string name="device_card_active">ATIVO</string>
+    <string name="device_card_sector">Setor: %1$dB</string>
+    <string name="device_card_wp_active">WP Ativo</string>
+    <string name="device_card_configure">Configurar</string>
+    <string name="visualizer_alignment_ok">Alinhamento 1 MiB OK</string>
+    <string name="visualizer_lba_0">LBA 0 (%1$s)</string>
+
+    <!-- Device Hub Screen -->
+    <string name="hub_title">Painel do Dispositivo</string>
+    <string name="hub_back">Voltar</string>
+    <string name="hub_eject_button">Ejetar com Segurança</string>
+    <string name="hub_ejecting">Ejetando...</string>
+    <string name="hub_eject_dialog_title">Ejetar Dispositivo com Segurança?</string>
+    <string name="hub_eject_dialog_body">Certifique-se de que nenhuma gravação ou teste esteja em andamento para evitar corrupção de dados.</string>
+    <string name="hub_eject_dialog_confirm">Ejetar Agora</string>
+    <string name="hub_eject_dialog_cancel">Cancelar</string>
+    <string name="hub_eject_success">Dispositivo ejetado com sucesso!</string>
+    <string name="hub_eject_fail">Falha ao ejetar dispositivo.</string>
+    <string name="hub_category_storage">Armazenamento &amp; Partições</string>
+    <string name="hub_category_diagnostics">Diagnóstico &amp; Desempenho</string>
+    <string name="hub_tool_format_title">Formatar Unidade</string>
+    <string name="hub_tool_format_desc">Criar novos sistemas FAT32, exFAT, NTFS, ext4 ou GPT/MBR</string>
+    <string name="hub_tool_iso_title">Gravar Imagem ISO / IMG</string>
+    <string name="hub_tool_iso_desc">Gravar instaladores inicializáveis de Windows e Linux</string>
+    <string name="hub_tool_fake_title">Detector de Pendrive Falso</string>
+    <string name="hub_tool_fake_desc">Verificar capacidade real e integridade da memória Flash</string>
+    <string name="hub_tool_bench_title">Benchmark de Velocidade</string>
+    <string name="hub_tool_bench_desc">Medir taxa real de leitura e escrita sequencial em MB/s</string>
+    <string name="hub_device_info">%1$s • %2$dB/setor</string>
+    <string name="device_list_error_refresh">Erro ao atualizar dispositivos: %1$s</string>
+    <string name="device_list_error_permission">Permissão USB necessária para acessar e formatar o dispositivo.</string>
+    <string name="device_status_connecting">Conectando...</string>
+    <string name="device_card_connecting">CONECTANDO</string>
+
+    <!-- Tools Hub Screen -->
+    <string name="tools_nav_title">Ferramentas</string>
+    <string name="tools_target_device_header">DISPOSITIVO ALVO</string>
+    <string name="tools_no_device_title">Aguardando Dispositivo USB</string>
+    <string name="tools_no_device_desc">Conecte seu pendrive, SSD externo ou leitor de cartão via adaptador OTG para executar os diagnósticos de integridade e velocidade.</string>
+    <string name="tools_section_diagnostics">DIAGNÓSTICO &amp; INTEGRIDADE</string>
+    <string name="tools_fake_title">Detector de Pendrive Falso</string>
+    <string name="tools_fake_desc">Verifica a integridade das células Flash e detecta capacidades adulteradas (Probe Rápido ~45s ou Verificação Completa).</string>
+    <string name="tools_fake_badge">ANTI-FRAUDE</string>
+    <string name="tools_bench_title">Benchmark de Velocidade Real</string>
+    <string name="tools_bench_desc">Mede com precisão a taxa real de leitura e escrita sequencial em MB/s do barramento USB através de blocos de I/O configuráveis.</string>
+    <string name="tools_bench_badge">NÃO-DESTRUTIVO</string>
+
+    <!-- Benchmark / Diagnostic -->
+    <string name="diagnostic_title">Diagnóstico &amp; Benchmark</string>
+    <string name="diagnostic_back">Voltar</string>
+    <string name="diagnostic_ready">Pronto para testar velocidade</string>
+    <string name="diagnostic_transfer_rate_benchmark">Benchmark de Taxa de Transferência</string>
+    <string name="diagnostic_benchmark_desc">Mede a taxa de leitura e escrita real do barramento USB através de blocos de I/O configuráveis.</string>
+    <string name="diagnostic_block_size_label">Tamanho do Bloco de I/O</string>
+    <string name="diagnostic_seq_read">LEITURA SEQUENCIAL</string>
+    <string name="diagnostic_seq_write">ESCRITA SEQUENCIAL</string>
+    <string name="diagnostic_running_test">Executando Teste...</string>
+    <string name="diagnostic_start_benchmark">Iniciar Teste de Velocidade</string>
+    <string name="diagnostic_repeat_benchmark">Repetir Teste</string>
+    <string name="diagnostic_failed">Falha no benchmark: %1$s</string>
+    <string name="diagnostic_reading">Executando teste de leitura sequencial...</string>
+    <string name="diagnostic_writing">Executando teste de escrita sequencial...</string>
+    <string name="diagnostic_restoring">Restaurando setores originais (modo seguro não-destrutivo)...</string>
+    <string name="diagnostic_completed">Benchmark concluído com sucesso!</string>
+    <string name="diagnostic_non_destructive_notice">100% Não-destrutivo: os dados dos setores originais são salvos e restaurados com segurança.</string>
+
+    <!-- Fake Detector -->
+    <string name="fake_detector_mode_label">Modo de Varredura</string>
+    <string name="fake_detector_mode_full_verify">Preenchimento e Verificação Total</string>
+    <string name="fake_detector_mode_full_verify_desc">Preenche setores com padrões de teste e faz a releitura para confirmar a capacidade real</string>
+    <string name="fake_detector_mode_probe">Probe Rápido (~45s)</string>
+    <string name="fake_detector_mode_probe_desc">Verifica rapidamente fronteiras de potências de 2 para detectar retorno em falso</string>
+    <string name="fake_detector_block_size_label">Tamanho do Bloco de Teste</string>
+    <string name="fake_detector_limit_label">Limite de Capacidade a Testar</string>
+    <string name="fake_detector_limit_all">Disco Completo (100%)</string>
+    <string name="fake_detector_limit_gb">%1$d GB</string>
+    <string name="fake_detector_warning_destructive">Atenção: O Preenchimento Total grava padrões em toda a área do disco. Recomendado para pendrives recém-formatados ou vazios.</string>
+    <string name="fake_detector_writing_phase">Fase 1/2: Gravando padrões de teste (%1$.1f / %2$.1f GB)...</string>
+    <string name="fake_detector_verifying_phase">Fase 2/2: Verificando integridade dos dados (%1$.1f / %2$.1f GB)...</string>
+    <string name="fake_detector_start_full_verify">Iniciar Verificação Total</string>
+    <string name="fake_detector_start_probe">Iniciar Probe Rápido (~45s)</string>
+    <string name="fake_detector_title">Detector de Pendrive Falso</string>
+    <string name="fake_detector_back">Voltar</string>
+    <string name="fake_detector_ready">Pronto para testar</string>
+    <string name="fake_detector_announced_capacity">Capacidade anunciada: %1$s</string>
+    <string name="fake_detector_how_it_works">Como funciona o teste anti-fraude?</string>
+    <string name="fake_detector_explanation">Pendrives falsificados possuem firmware adulterado que reporta capacidades gigantes (ex: 2 TB), mas gravam em loop sobre um chip pequeno (16 GB), destruindo seus arquivos. O teste rápido verifica fronteiras de memória física com assinaturas criptográficas para confirmar se a memória realmente retém os dados.</string>
+    <string name="fake_detector_device_authentic">DISPOSITIVO AUTÊNTICO</string>
+    <string name="fake_detector_device_counterfeit">ALERTA DE FALSIFICAÇÃO</string>
+    <string name="fake_detector_verified">Memória física validada</string>
+    <string name="fake_detector_tampered">Capacidade adulterada</string>
+    <string name="fake_detector_checkpoints_tested">Fronteiras testadas: %1$d</string>
+    <string name="fake_detector_checkpoints_failed">Falhas: %1$d</string>
+    <string name="fake_detector_start_test">Iniciar Teste Rápido (~45s)</string>
+    <string name="fake_detector_repeat_test">Repetir Teste</string>
+    <string name="fake_detector_back_to_hub">Voltar ao Painel</string>
+    <string name="fake_detector_details_authentic">Unidade 100%% Autêntica! Todas as %1$d fronteiras de memória física retêm dados com integridade comprovada (%2$.1f GB).</string>
+    <string name="fake_detector_details_counterfeit">ALERTA: Unidade falsificada! Capacidade declarada: %1$.1f GB, mas a memória física real é de apenas aproximadamente %2$.1f GB. Arquivos gravados além desse limite serão destruídos!</string>
+    <string name="fake_detector_status_error">Erro: %1$s</string>
+
+    <!-- Format Wizard Screen -->
+    <string name="format_wizard_title">Configurar Formatação</string>
+    <string name="format_wizard_back">Voltar</string>
+    <string name="format_wizard_proceed">Avançar para Formatação</string>
+    <string name="format_wizard_device_info">%1$s • Setor %2$dB • Alinhado 1 MiB</string>
+    <string name="format_wizard_choose_fs">Escolha o Sistema de Arquivos</string>
+    <string name="format_wizard_exfat_desc">Arquivos sem limite de tamanho (&gt; 4 GB). Padrão moderno para PCs, Macs e TVs.</string>
+    <string name="format_wizard_badge_modern">MODERNO</string>
+    <string name="format_wizard_fat32_desc">Compatibilidade máxima com qualquer aparelho. Limite de 4 GB por arquivo.</string>
+    <string name="format_wizard_badge_universal">UNIVERSAL</string>
+    <string name="format_wizard_ntfs_desc">Padrão nativo do Windows para arquivos gigantes e alta confiabilidade com Journaling.</string>
+    <string name="format_wizard_badge_windows">WINDOWS</string>
+    <string name="format_wizard_ext4_desc">Sistema nativo do Linux/Android. Permissões POSIX e integridade de dados.</string>
+    <string name="format_wizard_badge_linux">LINUX</string>
+    <string name="format_wizard_fat16_desc">Para equipamentos eletrônicos clássicos ou mídias antigas menores que 2 GB.</string>
+    <string name="format_wizard_badge_legacy">LEGADO</string>
+    <string name="format_wizard_volume_label">Rótulo do Volume (Label)</string>
+    <string name="format_wizard_generate_name">Gerar Nome</string>
+    <string name="format_wizard_partition_scheme">Esquema de Partição</string>
+    <string name="format_wizard_mbr_desc">Compatível com tudo</string>
+    <string name="format_wizard_gpt_desc">UEFI &amp; Discos &gt; 2 TB</string>
+    <string name="format_wizard_quick_format_title">Formatação Rápida (Recomendado)</string>
+    <string name="format_wizard_quick_format_true_desc">Recria metadados e boot sectors em 3 segundos.</string>
+    <string name="format_wizard_quick_format_false_desc">Zera todos os setores (Full Zero Wipe). Leva vários minutos.</string>
+
+    <!-- Validation Errors & Warnings -->
+    <string name="validation_err_partition_too_small_exfat">O tamanho da partição é muito pequeno para estruturar o exFAT (mínimo de 10 MB).</string>
+    <string name="validation_err_partition_too_small_fat32">O tamanho da partição é muito pequeno para o sistema FAT32 (mínimo de 33 MB).</string>
+    <string name="validation_err_partition_too_small_ext4">O tamanho mínimo recomendado para criar um volume ext4 é 32 MB.</string>
+    <string name="validation_err_label_too_long">O rótulo do volume ultrapassa o tamanho máximo permitido para este sistema de arquivos.</string>
+    <string name="validation_err_fat16_over_4gb">O FAT16 suporta no máximo 4 GB de capacidade.</string>
+    <string name="validation_warn_fat32_over_2tb">Partições FAT32 maiores que 2 TB podem apresentar incompatibilidade com certos sistemas.</string>
+    <string name="validation_warn_ext4_compatibility">Aviso: certifique-se de que seu receptor (TV ou computador) possui suporte a partições ext4.</string>
+    <string name="validation_err_device_write_protected">O dispositivo está protegido contra gravação (chave física ou flag ativada).</string>
+    <string name="validation_err_zero_capacity">Não foi possível detectar a capacidade da unidade. Reconecte o adaptador OTG.</string>
+    <string name="format_error_wp">O dispositivo possui chave física ou flag de proteção contra gravação (Write-Protect) ativada.</string>
+    <string name="format_error_failed">Falha durante a operação: %1$s</string>
+    <string name="format_error_provider_not_found">Provedor para o sistema de arquivos não encontrado.</string>
+    <string name="iso_burn_written_summary">Gravados %1$s em %2$s (Média: %3$s). O pendrive já está pronto e inicializável.</string>
+    <string name="iso_burn_default_error">Erro desconhecido ao gravar blocos.</string>
+    <string name="progress_preparing">Preparando formatação…</string>
+
+    <!-- Safety Confirmation Dialog -->
+    <string name="safety_dialog_title">Confirmação de Segurança</string>
+    <string name="safety_dialog_body">Esta ação apagará permanentemente todos os arquivos contidos na unidade de armazenamento:</string>
+    <string name="safety_dialog_device">Dispositivo:</string>
+    <string name="safety_dialog_capacity">Capacidade:</string>
+    <string name="safety_dialog_usb_id">ID USB:</string>
+    <string name="safety_dialog_prompt">Para desbloquear, digite FORMATAR abaixo:</string>
+    <string name="safety_dialog_keyword">FORMATAR</string>
+    <string name="safety_dialog_confirm">Confirmar Formatação</string>
+    <string name="safety_dialog_cancel">Cancelar</string>
+
+    <!-- Format Progress Screen -->
+    <string name="progress_title">Formatando Armazenamento</string>
+    <string name="progress_warning">Não desconecte o cabo USB OTG</string>
+    <string name="progress_processing">PROCESSANDO</string>
+    <string name="progress_success_title">Formatação Concluída!</string>
+    <string name="progress_success_desc">A unidade foi particionada e formatada com sucesso.</string>
+    <string name="progress_fs_label">Sistema de Arquivos</string>
+    <string name="progress_pt_label">Tabela de Partição</string>
+    <string name="progress_label_label">Rótulo do Volume</string>
+    <string name="progress_time_label">Tempo Decorrido</string>
+    <string name="progress_seconds">%1$.1f segundos</string>
+    <string name="progress_alignment_label">Alinhamento Flash</string>
+    <string name="progress_finish_button">Concluir e Voltar</string>
+    <string name="progress_failure_title">Falha na Formatação</string>
+    <string name="progress_back_button">Voltar ao Início</string>
+
+    <!-- ISO Burner Screen -->
+    <string name="iso_title">Gravar Imagem ISO / IMG</string>
+    <string name="iso_back">Voltar</string>
+    <string name="iso_target_title">DESTINO: %1$s</string>
+    <string name="iso_target_capacity">Capacidade: %1$s • %2$d B/setor</string>
+    <string name="iso_image_section">Imagem do Sistema Operacional</string>
+    <string name="iso_image_desc">Selecione uma imagem (.iso, .img, .bin) para gravar diretamente nos setores do pendrive.</string>
+    <string name="iso_size_label">Tamanho: %1$s</string>
+    <string name="iso_too_large">A imagem é maior que o pendrive! Escolha outro dispositivo.</string>
+    <string name="iso_pick_file">Escolher Arquivo ISO / IMG</string>
+    <string name="iso_change_file">Trocar Imagem</string>
+    <string name="iso_critical_warning">Aviso Crítico: Gravar uma ISO substituirá totalmente a tabela de partição e apagará todos os arquivos no pendrive.</string>
+    <string name="iso_speed_metric">VELOCIDADE</string>
+    <string name="iso_eta_metric">TEMPO ESTIMADO</string>
+    <string name="iso_success_title">Pendrive Criado com Sucesso!</string>
+    <string name="iso_failure_title">Falha na Gravação</string>
+    <string name="iso_start_burn">Gravar Imagem no Pendrive</string>
+    <string name="iso_burning">Gravando Imagem...</string>
+    <string name="iso_cancel">Cancelar</string>
+    <string name="iso_confirm_title">Confirmar Gravação de Imagem</string>
+    <string name="iso_confirm_message">Tem certeza de que deseja gravar a imagem \"%1$s\" no dispositivo \"%2$s\"?\n\nTodos os dados e partições existentes serão destruídos irreversivelmente.</string>
+    <string name="iso_confirm_button">Sim, Gravar Imagem</string>
+    <string name="iso_confirm_cancel">Cancelar</string>
+    <string name="iso_cancelled_by_user">Operação cancelada pelo usuário.</string>
+
+    <!-- Foreground Service -->
+    <string name="service_formatting">Formatando...</string>
+    <string name="service_init">Inicializando serviço de disco...</string>
+    <string name="service_formatting_device">Formatando %1$s...</string>
+    <string name="service_in_progress">Operação de gravação em andamento</string>
+    <string name="service_progress">Formatando: %1$d%%</string>
+    <string name="service_channel_name">Formatação USB</string>
+    <string name="service_channel_desc">Notificações do processo de gravação e formatação de disco OTG</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Configurações</string>
+    <string name="settings_navigate_back">Voltar</string>
+    <string name="settings_section_general">Idioma &amp; Interface</string>
+    <string name="settings_language_label">Idioma do Aplicativo</string>
+    <string name="settings_lang_system">Padrão do Sistema</string>
+    <string name="settings_lang_system_desc">Usar idioma configurado no Android</string>
+    <string name="settings_lang_en">English</string>
+    <string name="settings_lang_en_desc">Inglês (Estados Unidos)</string>
+    <string name="settings_lang_pt">Português</string>
+    <string name="settings_lang_pt_desc">Português (Brasil)</string>
+    <string name="settings_section_formatting">Formatação &amp; Armazenamento</string>
+    <string name="settings_default_fs_label">Sistema de Arquivos Padrão</string>
+    <string name="settings_default_fs_desc">Sistema pré-selecionado ao abrir o Assistente de Formatação</string>
+    <string name="settings_default_quick_format_label">Formatação Rápida por Padrão</string>
+    <string name="settings_default_quick_format_desc">Ignora o zeramento completo de todos os setores do disco</string>
+    <string name="settings_section_safety">Segurança &amp; Proteção</string>
+    <string name="settings_strict_safety_label">Confirmação Estrita</string>
+    <string name="settings_strict_safety_desc">Exige digitar a confirmação antes de apagar qualquer dispositivo</string>
+    <string name="settings_section_developer">Opções do Desenvolvedor</string>
+    <string name="settings_developer_mode_label">Modo Desenvolvedor</string>
+    <string name="settings_developer_mode_desc">Exibe o overlay de desempenho em tempo real (FPS, RAM, CPU e GPU)</string>
+    <string name="settings_fake_usb_label">Pendrive de Mentira (USB Virtual)</string>
+    <string name="settings_fake_usb_desc">Adiciona um pendrive virtual de 64 GB para testar formatação, testes e ferramentas sem pendrive físico</string>
+    <string name="settings_section_about">Sobre o USB Advance</string>
+    <string name="settings_app_version">Versão 1.0.0</string>
+    <string name="settings_engine_status">Motor: OTG SCSI Direto (Sem Root) / Bloco Direto (Root)</string>
+    <string name="settings_app_description">Utilitário avançado de armazenamento Android para particionamento, formatação, testes e gravação em discos USB.</string>
+</resources>

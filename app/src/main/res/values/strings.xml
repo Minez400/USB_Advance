@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">USB Advance</string>
+
+    <!-- Device List Screen -->
+    <string name="device_list_title">USB Advance</string>
+    <string name="device_list_refresh">Refresh List</string>
+    <string name="device_list_settings">Settings</string>
+    <string name="device_list_root_badge">ROOT</string>
+    <string name="device_list_otg_badge">USB OTG</string>
+    <string name="device_list_empty_icon">OTG Disconnected</string>
+    <string name="device_list_empty_title">Waiting for USB / OTG Device</string>
+    <string name="device_list_empty_desc">Connect your flash drive, external SSD, or card reader to the USB-C port via an OTG adapter.</string>
+    <string name="device_list_secure_isolation">Safe Isolation</string>
+    <string name="device_list_low_level_scsi">Low-Level SCSI</string>
+    <string name="device_list_controller_connected">USB Controller Connected</string>
+    <string name="device_list_devices_detected">%1$d Device(s) Detected</string>
+    <string name="device_list_storage_devices">Storage Devices</string>
+    <string name="bottom_nav_devices">Devices</string>
+
+    <!-- Device Card & Visualizer -->
+    <string name="device_card_usb_icon">USB Icon</string>
+    <string name="device_card_locked">LOCKED</string>
+    <string name="device_card_active">ACTIVE</string>
+    <string name="device_card_sector">Sector: %1$dB</string>
+    <string name="device_card_wp_active">WP Active</string>
+    <string name="device_card_configure">Configure</string>
+    <string name="visualizer_alignment_ok">1 MiB Alignment OK</string>
+    <string name="visualizer_lba_0">LBA 0 (%1$s)</string>
+
+    <!-- Device Hub Screen -->
+    <string name="hub_title">Device Dashboard</string>
+    <string name="hub_back">Back</string>
+    <string name="hub_eject_button">Safely Eject</string>
+    <string name="hub_ejecting">Ejecting...</string>
+    <string name="hub_eject_dialog_title">Safely Eject Device?</string>
+    <string name="hub_eject_dialog_body">Make sure no writing or testing operation is in progress to prevent data corruption.</string>
+    <string name="hub_eject_dialog_confirm">Eject Now</string>
+    <string name="hub_eject_dialog_cancel">Cancel</string>
+    <string name="hub_eject_success">Device safely ejected!</string>
+    <string name="hub_eject_fail">Failed to eject device.</string>
+    <string name="hub_category_storage">Storage &amp; Partitions</string>
+    <string name="hub_category_diagnostics">Diagnostics &amp; Performance</string>
+    <string name="hub_tool_format_title">Format Drive</string>
+    <string name="hub_tool_format_desc">Create new FAT32, exFAT, NTFS, ext4 or GPT/MBR filesystems</string>
+    <string name="hub_tool_iso_title">Flash ISO / IMG Image</string>
+    <string name="hub_tool_iso_desc">Write bootable Windows and Linux installers</string>
+    <string name="hub_tool_fake_title">Fake Flash Drive Detector</string>
+    <string name="hub_tool_fake_desc">Verify real capacity and flash memory integrity</string>
+    <string name="hub_tool_bench_title">Speed Benchmark</string>
+    <string name="hub_tool_bench_desc">Measure real sequential read and write speeds in MB/s</string>
+    <string name="hub_device_info">%1$s • %2$dB/sector</string>
+    <string name="device_list_error_refresh">Error refreshing device list: %1$s</string>
+    <string name="device_list_error_permission">USB permission required to access and format device.</string>
+    <string name="device_status_connecting">Connecting...</string>
+    <string name="device_card_connecting">CONNECTING</string>
+
+    <!-- Tools Hub Screen -->
+    <string name="tools_nav_title">Tools</string>
+    <string name="tools_target_device_header">TARGET DEVICE</string>
+    <string name="tools_no_device_title">Waiting for USB Device</string>
+    <string name="tools_no_device_desc">Connect your flash drive, external SSD, or card reader via OTG adapter to run integrity and speed diagnostics.</string>
+    <string name="tools_section_diagnostics">DIAGNOSTICS &amp; INTEGRITY</string>
+    <string name="tools_fake_title">Fake Flash Drive Detector</string>
+    <string name="tools_fake_desc">Verify flash memory integrity and detect counterfeit capacities using Fast Probe (~45s) or Full Fill &amp; Verify.</string>
+    <string name="tools_fake_badge">ANTI-FRAUD</string>
+    <string name="tools_bench_title">Real Speed Benchmark</string>
+    <string name="tools_bench_desc">Accurately measure sequential read and write transfer rates across the USB bus with configurable I/O buffer blocks.</string>
+    <string name="tools_bench_badge">NON-DESTRUCTIVE</string>
+
+    <!-- Benchmark / Diagnostic -->
+    <string name="diagnostic_title">Diagnostics &amp; Benchmark</string>
+    <string name="diagnostic_back">Back</string>
+    <string name="diagnostic_ready">Ready for speed test</string>
+    <string name="diagnostic_transfer_rate_benchmark">Transfer Rate Benchmark</string>
+    <string name="diagnostic_benchmark_desc">Measures real USB bus read and write bandwidth using configurable sector buffer chunks.</string>
+    <string name="diagnostic_block_size_label">I/O Buffer Block Size</string>
+    <string name="diagnostic_seq_read">SEQUENTIAL READ</string>
+    <string name="diagnostic_seq_write">SEQUENTIAL WRITE</string>
+    <string name="diagnostic_running_test">Running Test...</string>
+    <string name="diagnostic_start_benchmark">Start Speed Test</string>
+    <string name="diagnostic_repeat_benchmark">Repeat Test</string>
+    <string name="diagnostic_failed">Benchmark failed: %1$s</string>
+    <string name="diagnostic_reading">Testing sequential read...</string>
+    <string name="diagnostic_writing">Testing sequential write...</string>
+    <string name="diagnostic_restoring">Restoring original sectors (safe non-destructive)...</string>
+    <string name="diagnostic_completed">Benchmark completed successfully!</string>
+    <string name="diagnostic_non_destructive_notice">100% Non-destructive: original sector data is backed up and safely restored.</string>
+
+    <!-- Fake Detector -->
+    <string name="fake_detector_mode_label">Scan Mode</string>
+    <string name="fake_detector_mode_full_verify">Full Drive Fill &amp; Verify</string>
+    <string name="fake_detector_mode_full_verify_desc">Fills sectors with test patterns and reads back to verify real capacity</string>
+    <string name="fake_detector_mode_probe">Fast Probe (~45s)</string>
+    <string name="fake_detector_mode_probe_desc">Quickly probes power-of-2 boundaries to detect memory wrap-around</string>
+    <string name="fake_detector_block_size_label">Test Block Size</string>
+    <string name="fake_detector_limit_label">Capacity Limit to Test</string>
+    <string name="fake_detector_limit_all">Full Drive (100%)</string>
+    <string name="fake_detector_limit_gb">%1$d GB</string>
+    <string name="fake_detector_warning_destructive">Notice: Full Drive Fill writes test patterns across sectors. Recommended for newly formatted or empty drives.</string>
+    <string name="fake_detector_writing_phase">Phase 1/2: Writing test patterns (%1$.1f / %2$.1f GB)...</string>
+    <string name="fake_detector_verifying_phase">Phase 2/2: Verifying data integrity (%1$.1f / %2$.1f GB)...</string>
+    <string name="fake_detector_start_full_verify">Start Full Fill &amp; Verify</string>
+    <string name="fake_detector_start_probe">Start Fast Probe (~45s)</string>
+    <string name="fake_detector_title">Fake Flash Drive Detector</string>
+    <string name="fake_detector_back">Back</string>
+    <string name="fake_detector_ready">Ready to test</string>
+    <string name="fake_detector_announced_capacity">Reported capacity: %1$s</string>
+    <string name="fake_detector_how_it_works">How does the anti-counterfeit test work?</string>
+    <string name="fake_detector_explanation">Counterfeit flash drives have modified firmware reporting fake capacities (e.g. 2 TB) while looping over a small physical chip (16 GB), corrupting your files. This quick test verifies physical memory boundaries with cryptographic signatures.</string>
+    <string name="fake_detector_device_authentic">AUTHENTIC DEVICE</string>
+    <string name="fake_detector_device_counterfeit">COUNTERFEIT ALERT</string>
+    <string name="fake_detector_verified">Physical memory verified</string>
+    <string name="fake_detector_tampered">Tampered capacity</string>
+    <string name="fake_detector_checkpoints_tested">Boundaries tested: %1$d</string>
+    <string name="fake_detector_checkpoints_failed">Failures: %1$d</string>
+    <string name="fake_detector_start_test">Start Quick Test (~45s)</string>
+    <string name="fake_detector_repeat_test">Repeat Test</string>
+    <string name="fake_detector_back_to_hub">Back to Dashboard</string>
+    <string name="fake_detector_details_authentic">100%% Authentic drive! All %1$d tested physical memory boundaries retain data with proven integrity (%2$.1f GB).</string>
+    <string name="fake_detector_details_counterfeit">ALERT: Counterfeit drive! Declared capacity: %1$.1f GB, but real physical flash memory is only ~%2$.1f GB. Files written past this boundary will be corrupted!</string>
+    <string name="fake_detector_status_error">Error: %1$s</string>
+
+    <!-- Format Wizard Screen -->
+    <string name="format_wizard_title">Format Setup</string>
+    <string name="format_wizard_back">Back</string>
+    <string name="format_wizard_proceed">Proceed to Format</string>
+    <string name="format_wizard_device_info">%1$s • Sector %2$dB • 1 MiB Aligned</string>
+    <string name="format_wizard_choose_fs">Choose File System</string>
+    <string name="format_wizard_exfat_desc">No file size limit (&gt; 4 GB). Modern standard for PCs, Macs, and TVs.</string>
+    <string name="format_wizard_badge_modern">MODERN</string>
+    <string name="format_wizard_fat32_desc">Maximum compatibility with any device. 4 GB file size limit.</string>
+    <string name="format_wizard_badge_universal">UNIVERSAL</string>
+    <string name="format_wizard_ntfs_desc">Native Windows filesystem for giant files and high reliability with journaling.</string>
+    <string name="format_wizard_badge_windows">WINDOWS</string>
+    <string name="format_wizard_ext4_desc">Native Linux/Android system. POSIX permissions and data integrity.</string>
+    <string name="format_wizard_badge_linux">LINUX</string>
+    <string name="format_wizard_fat16_desc">For legacy electronics or older media under 2 GB.</string>
+    <string name="format_wizard_badge_legacy">LEGACY</string>
+    <string name="format_wizard_volume_label">Volume Label</string>
+    <string name="format_wizard_generate_name">Generate Name</string>
+    <string name="format_wizard_partition_scheme">Partition Scheme</string>
+    <string name="format_wizard_mbr_desc">Compatible with everything</string>
+    <string name="format_wizard_gpt_desc">UEFI &amp; Disks &gt; 2 TB</string>
+    <string name="format_wizard_quick_format_title">Quick Format (Recommended)</string>
+    <string name="format_wizard_quick_format_true_desc">Recreates metadata and boot sectors in seconds.</string>
+    <string name="format_wizard_quick_format_false_desc">Zeroes all sectors (Full Zero Wipe). Takes several minutes.</string>
+
+    <!-- Validation Errors & Warnings -->
+    <string name="validation_err_partition_too_small_exfat">Partition size is too small for exFAT (minimum 10 MB required).</string>
+    <string name="validation_err_partition_too_small_fat32">Partition size is too small for FAT32 (minimum 33 MB required).</string>
+    <string name="validation_err_partition_too_small_ext4">Minimum partition size for ext4 is 32 MB.</string>
+    <string name="validation_err_label_too_long">Volume label exceeds the maximum length allowed for this filesystem.</string>
+    <string name="validation_err_fat16_over_4gb">FAT16 supports a maximum partition capacity of 4 GB.</string>
+    <string name="validation_warn_fat32_over_2tb">FAT32 partitions larger than 2 TB may not be compatible with certain operating systems.</string>
+    <string name="validation_warn_ext4_compatibility">Ensure your destination device (computer, TV, media center) supports ext4 partitions.</string>
+    <string name="validation_warn_small_cluster_fat32">A small cluster size on large volumes may degrade performance.</string>
+    <string name="validation_err_device_write_protected">Device is write-protected (physical switch or read-only flag enabled).</string>
+    <string name="validation_err_zero_capacity">Device capacity could not be detected. Reconnect OTG adapter.</string>
+    <string name="format_error_wp">The device has a physical write-protect switch or read-only flag enabled.</string>
+    <string name="format_error_failed">Operation failed: %1$s</string>
+    <string name="format_error_provider_not_found">Filesystem provider not found.</string>
+    <string name="iso_burn_written_summary">Wrote %1$s in %2$s (Average: %3$s). Drive is ready and bootable.</string>
+    <string name="iso_burn_default_error">Unknown error writing blocks to flash drive.</string>
+    <string name="progress_preparing">Preparing format…</string>
+
+    <!-- Safety Confirmation Dialog -->
+    <string name="safety_dialog_title">Safety Confirmation</string>
+    <string name="safety_dialog_body">This action will permanently erase all files on the storage drive:</string>
+    <string name="safety_dialog_device">Device:</string>
+    <string name="safety_dialog_capacity">Capacity:</string>
+    <string name="safety_dialog_usb_id">USB ID:</string>
+    <string name="safety_dialog_prompt">To unlock, type FORMAT below:</string>
+    <string name="safety_dialog_keyword">FORMAT</string>
+    <string name="safety_dialog_confirm">Confirm Format</string>
+    <string name="safety_dialog_cancel">Cancel</string>
+
+    <!-- Format Progress Screen -->
+    <string name="progress_title">Formatting Storage</string>
+    <string name="progress_warning">Do not disconnect USB OTG cable</string>
+    <string name="progress_processing">PROCESSING</string>
+    <string name="progress_success_title">Format Completed!</string>
+    <string name="progress_success_desc">The drive was successfully partitioned and formatted.</string>
+    <string name="progress_fs_label">File System</string>
+    <string name="progress_pt_label">Partition Table</string>
+    <string name="progress_label_label">Volume Label</string>
+    <string name="progress_time_label">Elapsed Time</string>
+    <string name="progress_seconds">%1$.1f seconds</string>
+    <string name="progress_alignment_label">Flash Alignment</string>
+    <string name="progress_finish_button">Finish and Return</string>
+    <string name="progress_failure_title">Format Failed</string>
+    <string name="progress_back_button">Return to Home</string>
+
+    <!-- ISO Burner Screen -->
+    <string name="iso_title">Flash ISO / IMG Image</string>
+    <string name="iso_back">Back</string>
+    <string name="iso_target_title">TARGET: %1$s</string>
+    <string name="iso_target_capacity">Capacity: %1$s • %2$d B/sector</string>
+    <string name="iso_image_section">Operating System Image</string>
+    <string name="iso_image_desc">Select an image (.iso, .img, .bin) to write directly to flash drive sectors.</string>
+    <string name="iso_size_label">Size: %1$s</string>
+    <string name="iso_too_large">Image is larger than the flash drive! Choose another device.</string>
+    <string name="iso_pick_file">Choose ISO / IMG File</string>
+    <string name="iso_change_file">Change Image</string>
+    <string name="iso_critical_warning">Critical Warning: Flashing an ISO will completely overwrite the partition table and erase all files on the drive.</string>
+    <string name="iso_speed_metric">SPEED</string>
+    <string name="iso_eta_metric">ESTIMATED TIME</string>
+    <string name="iso_success_title">Flash Drive Successfully Created!</string>
+    <string name="iso_failure_title">Flashing Failed</string>
+    <string name="iso_start_burn">Flash Image to Drive</string>
+    <string name="iso_burning">Flashing Image...</string>
+    <string name="iso_cancel">Cancel</string>
+    <string name="iso_confirm_title">Confirm Image Flashing</string>
+    <string name="iso_confirm_message">Are you sure you want to flash the image \"%1$s\" to \"%2$s\"?\n\nAll existing data and partitions will be irreversibly erased.</string>
+    <string name="iso_confirm_button">Yes, Flash Image</string>
+    <string name="iso_confirm_cancel">Cancel</string>
+    <string name="iso_cancelled_by_user">Operation cancelled by user.</string>
+
+    <!-- Foreground Service -->
+    <string name="service_formatting">Formatting...</string>
+    <string name="service_init">Initializing disk service...</string>
+    <string name="service_formatting_device">Formatting %1$s...</string>
+    <string name="service_in_progress">Write operation in progress</string>
+    <string name="service_progress">Formatting: %1$d%%</string>
+    <string name="service_channel_name">USB Formatting</string>
+    <string name="service_channel_desc">OTG drive formatting and flashing notifications</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_navigate_back">Back</string>
+    <string name="settings_section_general">Language &amp; Interface</string>
+    <string name="settings_language_label">App Language</string>
+    <string name="settings_lang_system">System Default</string>
+    <string name="settings_lang_system_desc">Follow Android device language</string>
+    <string name="settings_lang_en">English</string>
+    <string name="settings_lang_en_desc">English (United States)</string>
+    <string name="settings_lang_pt">Português</string>
+    <string name="settings_lang_pt_desc">Português (Brasil)</string>
+    <string name="settings_section_formatting">Formatting &amp; Storage</string>
+    <string name="settings_default_fs_label">Default File System</string>
+    <string name="settings_default_fs_desc">Preselected file system in Format Wizard</string>
+    <string name="settings_default_quick_format_label">Default Quick Format</string>
+    <string name="settings_default_quick_format_desc">Skips zeroing entire disk sectors</string>
+    <string name="settings_section_safety">Safety &amp; Protection</string>
+    <string name="settings_strict_safety_label">Strict Confirmation</string>
+    <string name="settings_strict_safety_desc">Requires typing confirmation keyword before wiping</string>
+    <string name="settings_section_developer">Developer Options</string>
+    <string name="settings_developer_mode_label">Developer Mode</string>
+    <string name="settings_developer_mode_desc">Enable real-time FPS, RAM, CPU &amp; GPU performance overlay</string>
+    <string name="settings_fake_usb_label">Mock USB Drive (Fake Pendrive)</string>
+    <string name="settings_fake_usb_desc">Add a virtual 64 GB USB drive to test formatting, benchmarking &amp; tools without physical hardware</string>
+    <string name="settings_section_about">About USB Advance</string>
+    <string name="settings_app_version">Version 1.0.0</string>
+    <string name="settings_engine_status">Engine: OTG Direct SCSI (Rootless) / Root Direct Block</string>
+    <string name="settings_app_description">Next-generation Android storage toolkit for partitioning, formatting, testing, and flashing USB drives.</string>
+</resources>
