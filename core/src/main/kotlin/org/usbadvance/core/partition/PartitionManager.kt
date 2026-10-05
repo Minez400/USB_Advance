@@ -14,8 +14,16 @@ import org.usbadvance.core.storage.model.PartitionTableType
  */
 class PartitionManager(
     private val mbrEngine: MbrEngine = MbrEngine(),
-    private val gptEngine: GptEngine = GptEngine()
+    private val gptEngine: GptEngine = GptEngine(),
+    private val scanner: PartitionScanner = PartitionScanner(mbrEngine, gptEngine)
 ) {
+    /**
+     * Inspects media and identifies existing MBR, GPT, or Superfloppy partitions.
+     */
+    suspend fun scanPartitions(blockDevice: IBlockDevice): List<IPartition> {
+        return scanner.scanPartitions(blockDevice)
+    }
+
     /**
      * Applies requested partition scheme by creating a primary partition encompassing usable disk space.
      */
@@ -67,6 +75,12 @@ class PartitionManager(
                     label = volumeLabel
                 )
             }
+        }
+    }
+
+    companion object {
+        suspend fun scanPartitions(blockDevice: IBlockDevice): List<IPartition> {
+            return PartitionManager().scanPartitions(blockDevice)
         }
     }
 }

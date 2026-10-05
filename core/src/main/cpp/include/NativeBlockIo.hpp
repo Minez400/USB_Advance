@@ -15,6 +15,13 @@ namespace usbadvance {
 using WriteSectorsFn = std::function<bool(uint64_t lba, uint32_t count, const uint8_t* data)>;
 
 /**
+ * Callback function for reading contiguous sectors from physical media.
+ * Parameters: (start_lba, sector_count, destination_pointer).
+ * Returns true if read succeeded.
+ */
+using ReadSectorsFn = std::function<bool(uint64_t lba, uint32_t count, uint8_t* destination)>;
+
+/**
  * Callback function for format progress notification.
  * Parameters: (percentage_0_to_100, stage_description).
  */

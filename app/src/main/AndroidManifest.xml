@@ -17,6 +17,9 @@
     <!-- Background notifications for Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Localhost socket permission for high-speed direct media streaming server (127.0.0.1) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".UsbAdvanceApp"
         android:allowBackup="true"
@@ -33,7 +36,8 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale|locale|layoutDirection">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

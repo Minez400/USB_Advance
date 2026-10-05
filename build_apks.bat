@@ -12,6 +12,11 @@ if defined JAVA_HOME (
     if exist "%JAVA_HOME%\bin\java.exe" goto :java_found
 )
 
+if exist "C:\Program Files\Microsoft\jdk-21.0.12.101-hotspot\bin\java.exe" (
+    set "JAVA_HOME=C:\Program Files\Microsoft\jdk-21.0.12.101-hotspot"
+    goto :java_found
+)
+
 if exist "C:\Users\Minez400\.jdks\jbr-21.0.11\bin\java.exe" (
     set "JAVA_HOME=C:\Users\Minez400\.jdks\jbr-21.0.11"
     goto :java_found

@@ -17,15 +17,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cable
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.SportsEsports
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -58,6 +62,7 @@ import org.usbadvance.feature.devicelist.vm.DeviceListViewModel
 fun DeviceListScreen(
     viewModel: DeviceListViewModel,
     onDeviceSelected: (IStorageDevice) -> Unit,
+    onNavigateToExplorer: (IStorageDevice) -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
     onNavigateToGameTools: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -140,7 +145,9 @@ fun DeviceListScreen(
                             lineHeight = 20.sp
                         )
 
-                        Spacer(modifier = Modifier.height(28.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Spacer(modifier = Modifier.height(24.dp))
 
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -206,7 +213,8 @@ fun DeviceListScreen(
                         items(state.devices, key = { it.id }) { device ->
                             DeviceCard(
                                 device = device,
-                                onClick = { onDeviceSelected(device) }
+                                onClick = { onDeviceSelected(device) },
+                                onExploreClick = { onNavigateToExplorer(device) }
                             )
                         }
                     }

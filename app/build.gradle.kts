@@ -8,12 +8,16 @@ android {
     namespace = "org.usbadvance"
     compileSdk = 35
 
+    lint {
+        abortOnError = false
+    }
+
     defaultConfig {
         applicationId = "org.usbadvance"
         minSdk = 29
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

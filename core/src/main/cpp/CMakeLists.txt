@@ -12,6 +12,8 @@ add_library(
     src/ExFatFormatter.cpp
     src/Ext4Formatter.cpp
     src/NtfsFormatter.cpp
+    src/ExFatVfsEngine.cpp
+    src/ExFatNativeBridge.cpp
     src/jni_bridge.cpp
 )
 

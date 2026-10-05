@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Usb
 import androidx.compose.material3.Card
@@ -45,6 +46,7 @@ import org.usbadvance.core.storage.api.IStorageDevice
 fun DeviceCard(
     device: IStorageDevice,
     onClick: () -> Unit,
+    onExploreClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val cardBorderBrush = remember {
@@ -179,11 +181,35 @@ fun DeviceCard(
                     }
                 }
 
-                Icon(
-                    imageVector = Icons.Default.ChevronRight,
-                    contentDescription = stringResource(R.string.device_card_configure),
-                    tint = Color(0xFF00E5FF)
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (onExploreClick != null) {
+                        androidx.compose.material3.OutlinedButton(
+                            onClick = onExploreClick,
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f)),
+                            colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFF00E5FF)
+                            ),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.FolderOpen,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Abrir", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = stringResource(R.string.device_card_configure),
+                        tint = Color(0xFF00E5FF)
+                    )
+                }
             }
         }
     }

@@ -23,8 +23,10 @@ class VirtualBlockDevice(
 
     override suspend fun writeSectors(lba: Long, count: Int, source: ByteBuffer) {
         val offset = (lba * sectorSize).toInt()
-        val length = count * sectorSize
-        source.get(storage, offset, length)
+        val length = minOf(count * sectorSize, source.remaining())
+        if (length > 0) {
+            source.get(storage, offset, length)
+        }
     }
 
     override suspend fun eraseSectors(lba: Long, count: Int) {

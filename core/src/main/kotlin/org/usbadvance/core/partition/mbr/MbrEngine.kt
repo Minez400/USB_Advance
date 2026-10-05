@@ -36,6 +36,23 @@ class MbrEngine {
             return emptyList() // Drive does not contain a valid MBR table
         }
 
+        // Defensive check: If sector 0 is an exFAT, NTFS, or FAT32 VBR, it is NOT an MBR table
+        val oemBytes = ByteArray(8)
+        buffer.position(3)
+        buffer.get(oemBytes)
+        val oemString = String(oemBytes, Charsets.US_ASCII)
+        if (oemString.startsWith("EXFAT") || oemString.startsWith("NTFS")) {
+            return emptyList()
+        }
+        if (buffer.limit() >= 90) {
+            val fat32Bytes = ByteArray(5)
+            buffer.position(82)
+            buffer.get(fat32Bytes)
+            if (String(fat32Bytes, Charsets.US_ASCII) == "FAT32") {
+                return emptyList()
+            }
+        }
+
         val partitions = mutableListOf<MbrPartitionRecord>()
         for (i in 0 until 4) {
             buffer.position(PARTITION_TABLE_OFFSET + (i * 16))

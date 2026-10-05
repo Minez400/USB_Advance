@@ -299,38 +299,6 @@ fun SettingsScreen(
                             )
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.settings_fake_usb_label),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color.White
-                            )
-                            Text(
-                                text = stringResource(R.string.settings_fake_usb_desc),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF94A3B8)
-                            )
-                        }
-                        Switch(
-                            checked = settings.enableFakeUsbDrive,
-                            onCheckedChange = { viewModel.setEnableFakeUsbDrive(it) },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Color(0xFF10B981),
-                                uncheckedThumbColor = Color(0xFF64748B),
-                                uncheckedTrackColor = Color(0xFF1E293B)
-                            )
-                        )
-                    }
                 }
             }
 

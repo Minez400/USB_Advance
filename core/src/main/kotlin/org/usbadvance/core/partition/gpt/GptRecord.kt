@@ -75,7 +75,7 @@ data class GptPartitionEntry(
                 for (i in 0 until 36) {
                     nameChars[i] = buffer.char
                 }
-                val name = String(nameChars).trimEnd('\u0000')
+                val name = String(nameChars).substringBefore('\u0000').trim()
 
                 return GptPartitionEntry(
                     typeGuid = typeGuid,

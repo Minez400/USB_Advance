@@ -22,8 +22,6 @@ class SettingsViewModel(private val settingsManager: SettingsManager) : ViewMode
 
     fun setDeveloperMode(enabled: Boolean) = settingsManager.setDeveloperMode(enabled)
 
-    fun setEnableFakeUsbDrive(enabled: Boolean) = settingsManager.setEnableFakeUsbDrive(enabled)
-
     class Factory(private val settingsManager: SettingsManager) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

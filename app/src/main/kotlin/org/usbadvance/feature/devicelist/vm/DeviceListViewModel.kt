@@ -28,10 +28,6 @@ class DeviceListViewModel(
         checkRootAndStartListening()
     }
 
-    fun setEnableFakeUsb(enabled: Boolean) {
-        usbHostDetector.setEnableFakeUsb(enabled)
-    }
-
     private val attemptedAutoConnectIds = mutableSetOf<String>()
 
     private fun checkRootAndStartListening() {

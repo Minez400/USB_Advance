@@ -247,10 +247,8 @@
     <string name="settings_section_developer">Developer Options</string>
     <string name="settings_developer_mode_label">Developer Mode</string>
     <string name="settings_developer_mode_desc">Enable real-time FPS, RAM, CPU &amp; GPU performance overlay</string>
-    <string name="settings_fake_usb_label">Mock USB Drive (Fake Pendrive)</string>
-    <string name="settings_fake_usb_desc">Add a virtual 64 GB USB drive to test formatting, benchmarking &amp; tools without physical hardware</string>
     <string name="settings_section_about">About USB Advance</string>
-    <string name="settings_app_version">Version 1.0.0</string>
+    <string name="settings_app_version">Version 1.1.0</string>
     <string name="settings_engine_status">Engine: OTG Direct SCSI (Rootless) / Root Direct Block</string>
     <string name="settings_app_description">Next-generation Android storage toolkit for partitioning, formatting, testing, and flashing USB drives.</string>
 </resources>

@@ -49,6 +49,7 @@ fun MainScreen(
     settingsViewModel: SettingsViewModel,
     rootNavController: NavController,
     onDeviceSelected: (IStorageDevice) -> Unit,
+    onNavigateToExplorer: (IStorageDevice) -> Unit = {},
     onNavigateToBenchmark: (IStorageDevice) -> Unit,
     onNavigateToFakeDetector: (IStorageDevice) -> Unit
 ) {
@@ -119,7 +120,11 @@ fun MainScreen(
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(BottomNavItem.Devices.route) {
-                DeviceListScreen(viewModel = deviceListViewModel, onDeviceSelected = onDeviceSelected)
+                DeviceListScreen(
+                    viewModel = deviceListViewModel,
+                    onDeviceSelected = onDeviceSelected,
+                    onNavigateToExplorer = onNavigateToExplorer
+                )
             }
             composable(BottomNavItem.Tools.route) {
                 ToolsHubScreen(

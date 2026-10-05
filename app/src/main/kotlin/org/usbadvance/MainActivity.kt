@@ -3,6 +3,9 @@ package org.usbadvance
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -36,33 +39,45 @@ import org.usbadvance.feature.formatter.vm.FormatterViewModel
 import org.usbadvance.feature.settings.data.SettingsManager
 import org.usbadvance.feature.settings.ui.SettingsScreen
 import org.usbadvance.feature.settings.vm.SettingsViewModel
+import org.usbadvance.feature.explorer.ui.FileExplorerScreen
+import org.usbadvance.feature.explorer.vm.FileExplorerViewModel
+import org.usbadvance.feature.retro.ui.RetroHubScreen
+import org.usbadvance.feature.retro.vm.RetroHubViewModel
 import org.usbadvance.ui.overlay.DeveloperPerformanceOverlay
 import org.usbadvance.ui.theme.UsbAdvanceTheme
 
+/**
+ * Holds process-lifetime objects that must survive Activity recreation
+ * (rotation, dark mode, returning from the SAF picker under memory pressure).
+ */
+class AppSessionViewModel(app: android.app.Application) : androidx.lifecycle.AndroidViewModel(app) {
+    val usbHostDetector = UsbHostDetector(app.applicationContext)
+    var selectedDevice by mutableStateOf<IStorageDevice?>(null)
+
+    override fun onCleared() {
+        super.onCleared()
+        usbHostDetector.stopListening()
+    }
+}
+
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var usbHostDetector: UsbHostDetector
-    private lateinit var deviceListViewModel: DeviceListViewModel
-    private lateinit var formatterViewModel: FormatterViewModel
-    private lateinit var settingsManager: SettingsManager
-    private lateinit var settingsViewModel: SettingsViewModel
+    private val session: AppSessionViewModel by viewModels()
+    private val deviceListViewModel: DeviceListViewModel by viewModels {
+        viewModelFactory { initializer { DeviceListViewModel(session.usbHostDetector) } }
+    }
+    private val formatterViewModel: FormatterViewModel by viewModels()
+    private val fileExplorerViewModel: FileExplorerViewModel by viewModels()
+    private val retroHubViewModel: RetroHubViewModel by viewModels()
+    private val settingsViewModel: SettingsViewModel by viewModels {
+        viewModelFactory { initializer { SettingsViewModel(SettingsManager.getInstance(applicationContext)) } }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        settingsManager = SettingsManager.getInstance(applicationContext)
-        settingsViewModel = SettingsViewModel(settingsManager)
-
-        usbHostDetector = UsbHostDetector(applicationContext)
-        deviceListViewModel = DeviceListViewModel(usbHostDetector)
-        formatterViewModel = FormatterViewModel()
-
         setContent {
             val appSettings by settingsViewModel.settings.collectAsStateWithLifecycle()
-
-            LaunchedEffect(appSettings.enableFakeUsbDrive) {
-                deviceListViewModel.setEnableFakeUsb(appSettings.enableFakeUsbDrive)
-            }
 
             UsbAdvanceTheme {
                 Surface(
@@ -71,8 +86,11 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         UsbAdvanceNavGraph(
+                            session = session,
                             deviceListViewModel = deviceListViewModel,
                             formatterViewModel = formatterViewModel,
+                            fileExplorerViewModel = fileExplorerViewModel,
+                            retroHubViewModel = retroHubViewModel,
                             settingsViewModel = settingsViewModel
                         )
 
@@ -93,38 +111,50 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        if (::usbHostDetector.isInitialized) {
-            usbHostDetector.refreshDevices()
-        }
+        session.usbHostDetector.refreshDevices()
     }
+}
 
-    override fun onDestroy() {
-        super.onDestroy()
-        if (::usbHostDetector.isInitialized) {
-            usbHostDetector.stopListening()
+/** Renders [content] with the selected device, or returns to the main screen if it was lost. */
+@Composable
+private fun RequireDevice(
+    device: IStorageDevice?,
+    navController: androidx.navigation.NavHostController,
+    content: @Composable (IStorageDevice) -> Unit
+) {
+    if (device != null) {
+        content(device)
+    } else {
+        LaunchedEffect(Unit) {
+            if (!navController.popBackStack("main_screen", inclusive = false)) {
+                navController.navigate("main_screen")
+            }
         }
     }
 }
 
 @Composable
 fun UsbAdvanceNavGraph(
+    session: AppSessionViewModel,
     deviceListViewModel: DeviceListViewModel,
     formatterViewModel: FormatterViewModel,
+    fileExplorerViewModel: FileExplorerViewModel,
+    retroHubViewModel: RetroHubViewModel,
     settingsViewModel: SettingsViewModel
 ) {
     val navController = rememberNavController()
-    var selectedDevice by remember { mutableStateOf<IStorageDevice?>(null) }
+    var selectedDevice by session::selectedDevice
 
     val deviceState by deviceListViewModel.uiState.collectAsStateWithLifecycle()
     val connectedDevices = deviceState.devices
     val appSettings by settingsViewModel.settings.collectAsStateWithLifecycle()
 
-    // Automatically pop back to device list if the currently selected device is physically unplugged
+    // Automatically pop back to the main screen if the currently selected device is physically unplugged
     LaunchedEffect(connectedDevices, selectedDevice) {
         val current = selectedDevice
         if (current != null && !connectedDevices.any { it.id == current.id }) {
             selectedDevice = null
-            navController.popBackStack("device_list", inclusive = false)
+            navController.popBackStack("main_screen", inclusive = false)
         }
     }
 
@@ -148,6 +178,12 @@ fun UsbAdvanceNavGraph(
                         navController.navigate("device_hub")
                     }
                 },
+                onNavigateToExplorer = { device ->
+                    deviceListViewModel.selectDevice(device) { readyDevice ->
+                        selectedDevice = readyDevice
+                        navController.navigate("file_explorer")
+                    }
+                },
                 onNavigateToBenchmark = { device ->
                     selectedDevice = device
                     navController.navigate("diagnostic")
@@ -160,7 +196,7 @@ fun UsbAdvanceNavGraph(
         }
 
         composable("device_hub") {
-            selectedDevice?.let { dev ->
+            RequireDevice(selectedDevice, navController) { dev ->
                 DeviceHubScreen(
                     device = dev,
                     onNavigateToFormat = {
@@ -174,6 +210,12 @@ fun UsbAdvanceNavGraph(
                     onNavigateToIsoBurner = {
                         navController.navigate("iso_burner")
                     },
+                    onNavigateToExplorer = {
+                        navController.navigate("file_explorer")
+                    },
+                    onNavigateToRetroHub = {
+                        navController.navigate("retro_hub")
+                    },
                     onNavigateToFakeDetector = {
                         navController.navigate("fake_detector")
                     },
@@ -183,6 +225,30 @@ fun UsbAdvanceNavGraph(
                     onEjectDevice = {
                         deviceListViewModel.ejectDevice(dev)
                     },
+                    onBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+        }
+
+        composable("file_explorer") {
+            RequireDevice(selectedDevice, navController) { dev ->
+                FileExplorerScreen(
+                    device = dev,
+                    viewModel = fileExplorerViewModel,
+                    onBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+        }
+
+        composable("retro_hub") {
+            RequireDevice(selectedDevice, navController) { dev ->
+                RetroHubScreen(
+                    device = dev,
+                    viewModel = retroHubViewModel,
                     onBack = {
                         navController.popBackStack()
                     }
@@ -201,7 +267,7 @@ fun UsbAdvanceNavGraph(
         }
 
         composable("iso_burner") {
-            selectedDevice?.let { dev ->
+            RequireDevice(selectedDevice, navController) { dev ->
                 IsoBurnerScreen(
                     device = dev,
                     onBack = {
@@ -212,7 +278,7 @@ fun UsbAdvanceNavGraph(
         }
 
         composable("fake_detector") {
-            selectedDevice?.let { dev ->
+            RequireDevice(selectedDevice, navController) { dev ->
                 FakeDetectorScreen(
                     device = dev,
                     onBack = {
@@ -223,7 +289,7 @@ fun UsbAdvanceNavGraph(
         }
 
         composable("diagnostic") {
-            selectedDevice?.let { dev ->
+            RequireDevice(selectedDevice, navController) { dev ->
                 DiagnosticScreen(
                     device = dev,
                     onBack = {

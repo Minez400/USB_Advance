@@ -24,8 +24,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Usb
 import androidx.compose.material3.AlertDialog
@@ -68,6 +70,8 @@ fun DeviceHubScreen(
     device: IStorageDevice,
     onNavigateToFormat: () -> Unit,
     onNavigateToIsoBurner: () -> Unit,
+    onNavigateToExplorer: () -> Unit = {},
+    onNavigateToRetroHub: () -> Unit = {},
     onNavigateToFakeDetector: () -> Unit,
     onNavigateToBenchmark: () -> Unit,
     onEjectDevice: suspend () -> Boolean,
@@ -185,6 +189,24 @@ fun DeviceHubScreen(
                 color = Color(0xFF64748B),
                 letterSpacing = 1.sp,
                 modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+            )
+
+            // Operation 0: File Explorer
+            OperationActionCard(
+                icon = Icons.Default.FolderOpen,
+                title = "Explorador de Arquivos",
+                subtitle = "Navegue pelas pastas, assista a vídeos e gerencie arquivos exFAT",
+                accentColor = Color(0xFF00E5FF),
+                onClick = onNavigateToExplorer
+            )
+
+            // Operation 0.5: PS2 Retro Hub
+            OperationActionCard(
+                icon = Icons.Default.SportsEsports,
+                title = "PS2 Retro Hub (OPL)",
+                subtitle = "Catálogo ul.cfg, conversor USBUtil e diagnóstico de ISOs",
+                accentColor = Color(0xFFD500F9),
+                onClick = onNavigateToRetroHub
             )
 
             // Operation 1: Low-level drive format

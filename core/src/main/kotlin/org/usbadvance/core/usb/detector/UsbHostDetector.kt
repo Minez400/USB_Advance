@@ -27,6 +27,8 @@ import org.usbadvance.core.usb.bot.BotProtocolHandler
 import org.usbadvance.core.usb.bot.CommandStatusWrapper
 import org.usbadvance.core.usb.device.UsbBlockDevice
 import org.usbadvance.core.usb.permission.UsbPermissionManager
+import org.usbadvance.core.storage.api.IPartition
+import org.usbadvance.core.partition.PartitionScanner
 import org.usbadvance.core.usb.scsi.ScsiCommands
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
@@ -42,6 +44,8 @@ class UsbHostDetector(private val context: Context) {
     private val permissionManager = UsbPermissionManager(context)
     private val detectorScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val geometryCache = ConcurrentHashMap<String, DiskGeometry>()
+    private val partitionCache = ConcurrentHashMap<String, Pair<List<IPartition>, PartitionTableType>>()
+    private val partitionScanner = PartitionScanner()
 
     private val _connectedDevices = MutableStateFlow<List<IStorageDevice>>(emptyList())
     val connectedDevices: StateFlow<List<IStorageDevice>> = _connectedDevices.asStateFlow()
@@ -61,7 +65,10 @@ class UsbHostDetector(private val context: Context) {
                         @Suppress("DEPRECATION")
                         intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
                     }
-                    device?.deviceName?.let { geometryCache.remove(it) }
+                    device?.deviceName?.let {
+                        geometryCache.remove(it)
+                        partitionCache.remove(it)
+                    }
                     refreshDevices()
                 }
             }
@@ -98,6 +105,7 @@ class UsbHostDetector(private val context: Context) {
         val granted = permissionManager.requestPermission(usbDevice)
         if (granted) {
             geometryCache.remove(device.id) // Force re-query with granted permissions
+            partitionCache.remove(device.id)
             refreshDevicesAsync() // Await device scan and geometry query completion
         }
         return granted
@@ -108,21 +116,14 @@ class UsbHostDetector(private val context: Context) {
             val blockDevice = device.openBlockDevice()
             val result = blockDevice.eject()
             geometryCache.remove(device.id)
+            partitionCache.remove(device.id)
             refreshDevices()
             result
         } catch (e: Exception) {
             geometryCache.remove(device.id)
+            partitionCache.remove(device.id)
             refreshDevices()
             false
-        }
-    }
-
-    private var isFakeUsbEnabled = false
-
-    fun setEnableFakeUsb(enabled: Boolean) {
-        if (isFakeUsbEnabled != enabled) {
-            isFakeUsbEnabled = enabled
-            refreshDevices()
         }
     }
 
@@ -138,9 +139,6 @@ class UsbHostDetector(private val context: Context) {
 
     private suspend fun refreshDevicesInternal(): List<IStorageDevice> = withContext(Dispatchers.IO) {
         val detectedList = mutableListOf<IStorageDevice>()
-        if (isFakeUsbEnabled) {
-            detectedList.add(org.usbadvance.core.usb.device.FakeUsbStorageDeviceFactory.create())
-        }
         val deviceList = try {
             usbManager.deviceList
         } catch (e: Exception) {
@@ -188,6 +186,24 @@ class UsbHostDetector(private val context: Context) {
                 null
             } ?: "USB-${usbDevice.deviceId}"
 
+            // Inspect partition layout if device is accessible and has valid capacity
+            val (partitions, tableType) = if (hasPermission && geometry.totalSectors > 0) {
+                partitionCache.getOrPut(usbDevice.deviceName) {
+                    try {
+                        val blockDev = openUsbBlockDevice(usbDevice, massStorageIntf)
+                        blockDev.use { dev ->
+                            val parts = partitionScanner.scanPartitions(dev)
+                            val pType = parts.firstOrNull()?.partitionTableType ?: PartitionTableType.MBR
+                            parts to pType
+                        }
+                    } catch (e: Exception) {
+                        emptyList<IPartition>() to PartitionTableType.MBR
+                    }
+                }
+            } else {
+                emptyList<IPartition>() to PartitionTableType.MBR
+            }
+
             // Create high-level storage device abstraction
             val storageDevice = GenericStorageDevice(
                 id = usbDevice.deviceName,
@@ -198,8 +214,8 @@ class UsbHostDetector(private val context: Context) {
                 serialNumber = serial,
                 busType = StorageBusType.USB,
                 geometry = geometry,
-                partitionTableType = PartitionTableType.MBR,
-                partitions = emptyList(),
+                partitionTableType = tableType,
+                partitions = partitions,
                 isRemovable = true,
                 isWriteProtected = false,
                 blockDeviceProvider = {

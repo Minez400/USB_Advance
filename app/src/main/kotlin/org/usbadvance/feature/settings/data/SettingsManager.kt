@@ -44,8 +44,7 @@ class SettingsManager(context: Context) {
             defaultQuickFormat = prefs.getBoolean(KEY_QUICK_FORMAT, true),
             strictSafetyConfirmation = prefs.getBoolean(KEY_STRICT_SAFETY, true),
             ioBlockSizeBytes = savedBlockSize,
-            developerMode = prefs.getBoolean(KEY_DEVELOPER_MODE, false),
-            enableFakeUsbDrive = prefs.getBoolean(KEY_FAKE_USB_DRIVE, false)
+            developerMode = prefs.getBoolean(KEY_DEVELOPER_MODE, false)
         )
     }
 
@@ -86,11 +85,6 @@ class SettingsManager(context: Context) {
         _settings.value = _settings.value.copy(developerMode = enabled)
     }
 
-    fun setEnableFakeUsbDrive(enabled: Boolean) {
-        prefs.edit().putBoolean(KEY_FAKE_USB_DRIVE, enabled).apply()
-        _settings.value = _settings.value.copy(enableFakeUsbDrive = enabled)
-    }
-
     companion object {
         private const val PREFS_NAME = "usb_advance_preferences"
         private const val KEY_LANGUAGE = "pref_language"
@@ -100,7 +94,6 @@ class SettingsManager(context: Context) {
         private const val KEY_IO_BLOCK_SIZE = "pref_io_block_size"
         private const val KEY_BENCHMARK_BLOCK_SIZE = "pref_benchmark_block_size"
         private const val KEY_DEVELOPER_MODE = "pref_developer_mode"
-        private const val KEY_FAKE_USB_DRIVE = "pref_fake_usb_drive"
 
         @Volatile
         private var instance: SettingsManager? = null

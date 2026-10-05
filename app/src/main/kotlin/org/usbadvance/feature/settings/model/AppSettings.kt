@@ -9,6 +9,5 @@ data class AppSettings(
     val defaultQuickFormat: Boolean = true,
     val strictSafetyConfirmation: Boolean = true, // If true, requires typing confirmation keyword
     val ioBlockSizeBytes: Int = 1048576, // 512 B to 64 MB (default 1 MB)
-    val developerMode: Boolean = false, // FPS, RAM, CPU, GPU overlay
-    val enableFakeUsbDrive: Boolean = false // Mock 64 GB USB drive for testing
+    val developerMode: Boolean = false // FPS, RAM, CPU, GPU overlay
 )

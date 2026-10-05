@@ -26,6 +26,69 @@ class GptEngine {
     }
 
     /**
+     * Reads and parses partition entries from a GPT partition table.
+     */
+    suspend fun readPartitions(blockDevice: IBlockDevice): List<GptPartitionEntry> {
+        val sectorSize = blockDevice.sectorSize
+        val totalSectors = blockDevice.totalSectors
+        if (totalSectors < 34) return emptyList()
+
+        return try {
+            val headerBuf = ByteBuffer.allocateDirect(sectorSize).order(ByteOrder.LITTLE_ENDIAN)
+
+            // Read Primary GPT Header at LBA 1
+            blockDevice.readSectors(1L, 1, headerBuf)
+            headerBuf.flip()
+
+            if (headerBuf.long != GPT_SIGNATURE) {
+                // Check secondary GPT header at totalSectors - 1
+                headerBuf.clear()
+                blockDevice.readSectors(totalSectors - 1L, 1, headerBuf)
+                headerBuf.flip()
+                if (headerBuf.long != GPT_SIGNATURE) {
+                    return emptyList()
+                }
+            }
+
+            // Header fields
+            headerBuf.position(72) // Partition entries LBA offset in GPT header
+            val entriesLba = headerBuf.long
+            val numEntries = headerBuf.int
+            val entrySize = headerBuf.int
+
+            if (numEntries <= 0 || numEntries > 1024 || entrySize < PARTITION_ENTRY_SIZE || entrySize > 4096 ||
+                entriesLba <= 0 || entriesLba >= totalSectors
+            ) {
+                return emptyList()
+            }
+
+            val totalEntriesBytes = numEntries * entrySize
+            val entriesSectors = ((totalEntriesBytes + sectorSize - 1) / sectorSize)
+            if (entriesLba + entriesSectors > totalSectors) {
+                return emptyList()
+            }
+
+            val entriesBuf = ByteBuffer.allocateDirect(entriesSectors * sectorSize).order(ByteOrder.LITTLE_ENDIAN)
+            blockDevice.readSectors(entriesLba, entriesSectors, entriesBuf)
+            entriesBuf.flip()
+
+            val partitions = mutableListOf<GptPartitionEntry>()
+            for (i in 0 until numEntries) {
+                entriesBuf.position(i * entrySize)
+                val entry = GptPartitionEntry.parseFrom(entriesBuf)
+                if (entry != null && entry.startingLba in 1 until totalSectors &&
+                    entry.endingLba in entry.startingLba until totalSectors
+                ) {
+                    partitions.add(entry)
+                }
+            }
+            partitions
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    /**
      * Writes a standard GPT layout with a single 1 MiB-aligned partition (LBA 2048).
      * Includes:
      * - Protective MBR (LBA 0) with 0xEE partition

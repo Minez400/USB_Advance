@@ -3,6 +3,8 @@
     native <methods>;
 }
 -keep class org.usbadvance.core.fs.nativebridge.** { *; }
+-keep class org.usbadvance.core.vfs.** { *; }
+-keep class org.usbadvance.core.retro.** { *; }
 -keep class org.usbadvance.core.storage.model.** { *; }
 -keep class org.usbadvance.core.storage.api.** { *; }
 -keep class com.topjohnwu.superuser.** { *; }
