@@ -66,7 +66,7 @@ echo [*] Copying and organizing APK packages...
 echo.
 
 :: 4. Copy and rename APKs
-set "VERSION=v1.0.0"
+set "VERSION=v1.1.0"
 
 if exist "%SRC_DIR%\app-arm64-v8a-release.apk" (
     copy /y "%SRC_DIR%\app-arm64-v8a-release.apk" "%OUT_DIR%\USB_Advance_%VERSION%_arm64-v8a_64bit.apk" >nul
